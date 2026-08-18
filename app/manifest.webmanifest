@@ -1,0 +1,17 @@
+{
+  "name": "Munte 2026 — cursele montane din România",
+  "short_name": "Munte 2026",
+  "description": "Calendarul curselor de alergare montană și trail din România în 2026.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e9edde",
+  "theme_color": "#1f2a1d",
+  "lang": "ro",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

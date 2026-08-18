@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Munte 2026 — cursele montane din România</title>
+<meta name="description" content="Calendarul curselor de alergare montană și trail din România în 2026, cu linkuri către paginile oficiale.">
+<meta name="theme-color" content="#1f2a1d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e9edde;        /* hârtie de hartă topo */
+  --card:#f6f8ee;
+  --ink:#1f2a1d;          /* molid întunecat */
+  --ink-soft:#4c5a45;
+  --contour:#c8c1a4;      /* curbe de nivel */
+  --blaze:#ce2b26;        /* marcaj roșu */
+  --blaze-b:#1e5fa8;      /* marcaj albastru */
+  --blaze-y:#dfa400;      /* marcaj galben */
+  --disp:"Big Shoulders Display","Arial Narrow",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:15px;line-height:1.45;
+  background-image:
+    repeating-radial-gradient(ellipse 900px 420px at 18% -8%, transparent 0 46px, rgba(120,110,70,.09) 46px 47px),
+    repeating-radial-gradient(ellipse 1100px 520px at 92% 112%, transparent 0 58px, rgba(120,110,70,.07) 58px 59px);
+}
+a{color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+
+header.site{padding:28px 0 10px;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+h1{
+  font-family:var(--disp);font-weight:800;letter-spacing:.01em;
+  font-size:clamp(44px,9vw,84px);line-height:.92;margin:6px 0 4px;text-transform:uppercase;
+}
+h1 .yr{color:var(--blaze)}
+.sub{margin:0 0 14px;color:var(--ink-soft);max-width:56ch}
+
+/* creastă navigabilă */
+.ridge{display:block;width:100%;height:88px;margin:6px 0 0}
+.ridge .col{cursor:pointer}
+.ridge .col:hover .bar, .ridge .col:focus .bar{fill:var(--blaze)}
+.ridge text{font-family:var(--mono);font-size:9.5px;fill:var(--ink-soft);text-anchor:middle}
+.ridge .bar{fill:var(--ink);transition:fill .15s}
+.ridge polyline{fill:none;stroke:var(--blaze);stroke-width:2}
+
+/* filtre */
+.filters{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--contour)}
+.filters .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search]{
+  flex:1;min-width:160px;border:1.5px solid var(--ink);background:var(--card);
+  padding:8px 12px;font:inherit;border-radius:2px;color:var(--ink)
+}
+input[type=search]:focus{outline:2px solid var(--blaze);outline-offset:1px}
+.chip{
+  border:1.5px solid var(--ink);background:var(--card);border-radius:2px;
+  padding:6px 10px;font:600 12px var(--body);cursor:pointer;letter-spacing:.02em
+}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--card)}
+.chip:focus-visible{outline:2px solid var(--blaze);outline-offset:1px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-left:auto}
+
+/* luni */
+.month{margin-top:26px}
+.month>h2{
+  display:flex;align-items:center;gap:10px;margin:0 0 2px;
+  font-family:var(--disp);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.03em
+}
+.month>h2 .mk{flex:0 0 auto}
+.month>h2 .rule{flex:1;height:0;border-top:1.5px solid var(--ink)}
+.month>h2 .n{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--ink-soft)}
+
+/* eveniment */
+.ev{
+  display:grid;grid-template-columns:64px 1fr;gap:0 14px;
+  background:var(--card);border:1px solid var(--contour);border-left:4px solid var(--ink);
+  margin:10px 0;padding:10px 12px;border-radius:2px;position:relative
+}
+.ev.cancelled{border-left-color:var(--blaze)}
+.date{font-family:var(--mono);text-align:center;padding-top:2px}
+.date .dd{display:block;font-size:24px;font-weight:600;line-height:1}
+.date .rng{display:block;font-size:10.5px;color:var(--ink-soft);margin-top:3px}
+.ev h3{margin:0;font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:.01em;line-height:1.05}
+.ev h3 a{text-decoration:none}
+.ev h3 a:hover,.ev h3 a:focus{color:var(--blaze);text-decoration:underline;text-underline-offset:3px}
+.ev .meta{margin-top:3px;font-size:13px;color:var(--ink-soft)}
+.ev .meta .cty{font-family:var(--mono);font-size:11px;border:1px solid var(--contour);padding:0 4px;border-radius:2px;margin-left:4px}
+.ev .dist{margin-top:5px;font-family:var(--mono);font-size:12.5px}
+.ev .tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
+.tag{font:600 10.5px var(--body);text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:2px;border:1px solid var(--ink);color:var(--ink)}
+.tag.t-ultra{border-color:var(--blaze);color:var(--blaze)}
+.tag.t-sky,.tag.t-vertical{border-color:var(--blaze-b);color:var(--blaze-b)}
+.tag.t-iarnă,.tag.t-noapte{border-color:var(--ink-soft);color:var(--ink-soft)}
+.tag.t-campionat{border-color:var(--blaze-y);color:#8a6800}
+.note{margin-top:5px;font-size:12px;color:#8a6800}
+.stamp{
+  position:absolute;top:8px;right:10px;transform:rotate(-6deg);
+  font:800 13px var(--disp);letter-spacing:.14em;color:var(--blaze);
+  border:2px solid var(--blaze);padding:1px 7px;border-radius:2px;text-transform:uppercase
+}
+.ev.cancelled h3, .ev.cancelled .dist{text-decoration:line-through;text-decoration-color:rgba(206,43,38,.55)}
+.ev .out{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-decoration:none}
+.ev .out:hover{color:var(--blaze)}
+
+.empty{margin:40px 0;text-align:center;color:var(--ink-soft)}
+footer{margin:48px 0 32px;padding-top:14px;border-top:2px solid var(--ink);font-size:12.5px;color:var(--ink-soft)}
+footer a{color:var(--ink)}
+@media (max-width:520px){
+  .ev{grid-template-columns:52px 1fr;padding:10px}
+  .date .dd{font-size:20px}
+  .stamp{position:static;display:inline-block;margin-top:6px;transform:none}
+  .ev .out{position:static;display:inline-block;margin-top:6px}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <div class="kicker">alergare montană · trail · sky · vertical — românia</div>
+    <h1>Munte <span class="yr">2026</span></h1>
+    <p class="sub">Toate cursele de alergare montană și trail din România în 2026, într-un singur loc.
+    Doar informații + link către pagina fiecărei curse. Apasă pe o lună din creastă ca să sari la ea.</p>
+    <svg class="ridge" id="ridge" viewBox="0 0 880 88" preserveAspectRatio="none" role="navigation" aria-label="Navigare pe luni"></svg>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap row">
+    <input type="search" id="q" placeholder="Caută cursă, loc, județ…" aria-label="Caută">
+    <button class="chip" data-tag="ultra" aria-pressed="false">Ultra</button>
+    <button class="chip" data-tag="sky" aria-pressed="false">Sky</button>
+    <button class="chip" data-tag="vertical" aria-pressed="false">Vertical</button>
+    <button class="chip" data-tag="iarnă" aria-pressed="false">Iarnă</button>
+    <button class="chip" data-tag="noapte" aria-pressed="false">Noapte</button>
+    <button class="chip" id="showCancelled" aria-pressed="true">Arată anulate</button>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<main class="wrap" id="list" aria-live="polite"></main>
+
+<footer>
+  <div class="wrap">
+    <p>Date compilate din <a href="https://vladcarbune.ro/calendar-evenimente-alergare-2026/" rel="noopener">calendarul comunitar Vlad Cărbune</a>,
+    <a href="https://www.fra.ro/competitii/calendar" rel="noopener">FRA</a> și <a href="https://runmap.ro" rel="noopener">RunMap</a>.
+    Datele și distanțele se pot schimba — verifică întotdeauna pagina oficială a cursei. <span id="gen"></span></p>
+  </div>
+</footer>
+
+<script type="application/json" id="data">
+{
+  "generated": "2026-08-18",
+  "sources": [
+    "https://vladcarbune.ro/calendar-evenimente-alergare-2026/",
+    "https://www.fra.ro/competitii/calendar",
+    "https://runmap.ro/blog/calendar-alergare-iulie-2026"
+  ],
+  "events": [
+    {"d":"2026-01-24","name":"Făget Winter Race","url":"https://www.facebook.com/events/1592214835481202/","loc":"Cluj-Napoca","county":"CJ","dist":"21 / 15 / 7 km","tags":["iarnă"]},
+    {"d":"2026-02-06","d2":"2026-02-07","name":"SKV Vertical Race","url":"https://www.skvb.ro/","loc":"Brașov","county":"BV","dist":"21 / 10 km + night run","tags":["iarnă","vertical","noapte"]},
+    {"d":"2026-02-07","name":"Făget Winter Trail","url":"https://www.facebook.com/events/1572060160474114/","loc":"Cluj-Napoca","county":"CJ","dist":"15 / 8 km","tags":["iarnă"]},
+    {"d":"2026-02-07","d2":"2026-02-08","name":"Winter Run Buridava","url":"https://www.ecosport.ro/winter-run-valcea-buridava/","loc":"Ocnele Mari","county":"VL","dist":"21 / 6 km","tags":["iarnă"]},
+    {"d":"2026-02-21","name":"Șiria Winter Trail","url":"https://www.facebook.com/photo/?fbid=1289560226549231&set=a.565432002295394","loc":"Șiria","county":"AR","dist":"24 / 15 / 6 km","tags":["iarnă"]},
+    {"d":"2026-03-01","name":"Vlădeasa Winter Trail","url":"https://vladeasa.wintertrail.ro/","loc":"Rogojel","county":"CJ","dist":"15 km","tags":["iarnă"]},
+    {"d":"2026-03-14","name":"Primavera Trail Race","url":"https://www.primaveratrailrace.ro/ro/","loc":"Șuncuiuș","county":"BH","dist":"43 / 16 / 10 km","tags":["ultra"]},
+    {"d":"2026-03-21","name":"Uphill Running Championship","url":"https://urc.run/","loc":"Bencecu de Jos","county":"TM","dist":"21 / 10 km","tags":["vertical"]},
+    {"d":"2026-03-21","name":"Woodland Series – Trail Run","url":"https://www.facebook.com/events/1373253737877582/","loc":"Săldăbagiu de Munte","county":"BH","dist":"10 / 5 km","tags":[]},
+    {"d":"2026-03-28","name":"Să-Run-I","url":"https://sa-run-i.ro/","loc":"Zlatna","county":"AB","dist":"33 / 15 / 2,5 km","tags":[]},
+    {"d":"2026-03-28","name":"Gârboavele Trail Run","url":"https://garboaveletrailrun.ro/","loc":"Pădurea Gârboavele, Tulucești","county":"GL","dist":"23 / 7 km","tags":["pădure"]},
+    {"d":"2026-04-04","name":"Bistrița Trail Running","url":"https://cspaduribistritene.ro/","loc":"Bistrița","county":"BN","dist":"42 / 22 / 8 km","tags":["ultra"]},
+    {"d":"2026-04-04","name":"Reșița Stairs Challenge","url":"https://sites.google.com/view/stairschallenge","loc":"Reșița","county":"CS","dist":"14,5 km (D+1250) / 7 km (D+650)","tags":["vertical"]},
+    {"d":"2026-04-18","name":"Cheile Turzii Race","url":"https://www.facebook.com/CheileTurziiRace","loc":"Cheia","county":"CJ","dist":"23 / 9 km","tags":[]},
+    {"d":"2026-04-18","name":"Medieval Trail Race","url":"https://www.facebook.com/photo/?fbid=1289560226549231&set=a.565432002295394","loc":"Cetatea Șiria","county":"AR","dist":"61 / 44 / 20 / 8 km","tags":["ultra"]},
+    {"d":"2026-04-18","d2":"2026-04-19","name":"Maratonul Argonauților","url":"https://maratonulargonautilor.ro/","loc":"Cheile Dobrogei","county":"CT","dist":"42 / 23 / 16 / 6 km","tags":[]},
+    {"d":"2026-04-19","name":"Dălhăuți Trail Challenge","url":"https://velopower.ro/dalhauti-trail-challenge/","loc":"Dălhăuți","county":"VN","dist":"14 / 8 km","tags":[]},
+    {"d":"2026-04-25","name":"Campionatul Național de Alergare Montană – Trail","url":"https://www.fra.ro/competitii/calendar","loc":"Rășinari","county":"SB","dist":"trail (FRA)","tags":["campionat"]},
+    {"d":"2026-04-25","name":"Maratonul Codrului","url":"https://www.proracers.ro/","loc":"Homoroade","county":"SM","dist":"13 / 6 km","tags":["pădure"]},
+    {"d":"2026-04-25","name":"Forest Race Marghita","url":"https://runforfreedom.ro/evenimente/forest-race-marghita/","loc":"Marghita","county":"BH","dist":"21 / 11 / 5 km","tags":["pădure"]},
+    {"d":"2026-04-25","d2":"2026-04-26","name":"Urme Pe Play","url":"https://www.urmepeplay.ro/","loc":"Rășinari","county":"SB","dist":"58 / 41 / 22 / 13 / 4 km","tags":["ultra"]},
+    {"d":"2026-05-01","d2":"2026-05-03","name":"Alergăraș în Făgăraș","url":"https://alergaras.ro/","loc":"Făgăraș","county":"BV","dist":"46 / 20 / 14 / 5 / 3 km","tags":["ultra"]},
+    {"d":"2026-05-02","name":"Sălciua Trail Run","url":"https://register.42km.ro/events/view?hash=2ed7a077afa44d26d3f83f6f5a1f5646cf916f37","loc":"Sălciua","county":"AB","dist":"28 / 15 / 5 km","tags":[]},
+    {"d":"2026-05-09","name":"Campionatul Național de Alergare Montană – Vertical","url":"https://www.fra.ro/competitii/calendar","loc":"locație pe fra.ro","county":"—","dist":"vertical (FRA)","tags":["campionat","vertical"]},
+    {"d":"2026-05-09","name":"Subcarpați Trail Run","url":"https://subcarpatitrailrun.ro/","loc":"Cocorăștii Mislii","county":"PH","dist":"42 / 24 / 12 / 4 km","tags":["ultra"]},
+    {"d":"2026-05-10","name":"Campionatul Național de Alergare Montană – Up&Down","url":"https://www.fra.ro/competitii/calendar","loc":"locație pe fra.ro","county":"—","dist":"up&down (FRA)","tags":["campionat"]},
+    {"d":"2026-05-10","name":"Budureasa Mountain Running","url":"https://www.budureasarunning.ro/","loc":"Budureasa","county":"BH","dist":"16 / 8 km","tags":[]},
+    {"d":"2026-05-16","name":"EcoRun","url":"https://ecorun.ro/","loc":"Moieciu","county":"BV","dist":"42 / 28 / 14 km","tags":["ultra"]},
+    {"d":"2026-05-16","name":"Turnu Roșu Challenge","url":"https://www.turnurosuchallenge.ro/","loc":"Turnu Roșu","county":"SB","dist":"21 / 11 km","tags":[]},
+    {"d":"2026-05-16","name":"Run to the Hills","url":"https://runtothehills.ro/","loc":"Crasna","county":"SJ","dist":"22 / 14,5 / 6 km","tags":[]},
+    {"d":"2026-05-23","name":"Jidvei Weinland Trails","url":"https://www.jidvei.ro/jidvei-weinland-trails/","loc":"Cetatea de Baltă","county":"AB","dist":"42 / 21 / 10 / 5 km","tags":["ultra"]},
+    {"d":"2026-05-23","name":"Obciniada Night Run","url":"https://www.obciniada.ro/night-run","loc":"Gura Humorului","county":"SV","dist":"23 / 12 / 5 km","tags":["noapte"]},
+    {"d":"2026-05-23","d2":"2026-05-24","name":"Transylvania 100","url":"https://www.facebook.com/events/787007480865031","loc":"Castelul Bran","county":"BV","dist":"100 / 80 / 50 / 30 / 20 km","tags":["ultra"]},
+    {"d":"2026-05-29","d2":"2026-05-31","name":"Ultrabug","url":"https://www.ultrabug.ro/ro","loc":"Fundu Moldovei","county":"SV","dist":"100 / 50 / 42 / 8 km","tags":["ultra"]},
+    {"d":"2026-05-29","d2":"2026-06-01","name":"Brașov Marathon","url":"https://www.brasovmarathon.ro/","loc":"Brașov","county":"BV","dist":"70 / 41 / 21 / 9 km","tags":["ultra"]},
+    {"d":"2026-05-30","name":"Thermal Trail Race","url":"https://www.facebook.com/events/2010182889557041/","loc":"Băile 1 Mai","county":"BH","dist":"14 / 7 km","tags":[]},
+    {"d":"2026-05-30","name":"GeoPark Mehedinți Adventure","url":"https://www.geoparkmehedintiadventure.ro/","loc":"Brebina","county":"MH","dist":"30 / 15 km","tags":[]},
+    {"d":"2026-06-06","name":"msg Maraton Apuseni","url":"https://www.facebook.com/events/1750850818948555/","loc":"Buscat","county":"CJ","dist":"66 / 45 / 24 / 10 km","tags":["ultra"]},
+    {"d":"2026-06-06","name":"Bușteni Ultra Race","url":"https://busteniultrarace.ro/","loc":"Bușteni","county":"PH","dist":"60 / 35 / 26 / 10 km","tags":["ultra"]},
+    {"d":"2026-06-06","name":"Urlea Super Vertical","url":"https://fagarasrocks.ro/urlea-super-vertical/","loc":"Breaza","county":"BV","dist":"12 km (D+1833)","tags":["vertical"]},
+    {"d":"2026-06-06","name":"Măcin Mountain Fun","url":"https://www.bikeworks.ro/regulament-mmf/","loc":"Greci","county":"TL","dist":"23 / 12 km","tags":[]},
+    {"d":"2026-06-12","d2":"2026-06-13","name":"SepsiRun","url":"https://www.sepsirun.ro/","loc":"Sfântu Gheorghe","county":"CV","dist":"30 / 20 / 10 / 5 km + vertical 6 km","tags":["vertical"]},
+    {"d":"2026-06-13","name":"Atinge OMU","url":"https://www.facebook.com/events/871242151897728/","loc":"Peștera","county":"PH","dist":"15 km","tags":[]},
+    {"d":"2026-06-13","name":"Retezat Sky Race","url":"https://retezat.skyrace.ro/","loc":"Cheile Buții","county":"HD","dist":"29 / 23 / 7 km","tags":["sky"]},
+    {"d":"2026-06-13","name":"Bloodfluencer Marathon","url":"https://bloodfluencermarathon.ro/inscrieri/","loc":"Dejani","county":"BV","dist":"42 / 21 / 10 / 5 km","tags":["ultra"]},
+    {"d":"2026-06-13","name":"Maratonul Sării","url":"https://maratonulsarii.adrenallina.ro/","loc":"Târgu Ocna","county":"BC","dist":"21 / 10 km","tags":[]},
+    {"d":"2026-06-13","name":"Maraton Tarcău","url":"https://maraton-tarcau.ro/","loc":"Tarcău","county":"NT","dist":"42 / 21 / 8 km","tags":["ultra"]},
+    {"d":"2026-06-13","name":"Maraton Scaunul Domnului","url":"https://www.facebook.com/events/1435145131236212/","loc":"Bistra Mureșului","county":"MS","dist":"42 / 21 / 15 km","tags":["ultra"],"status":"anulat"},
+    {"d":"2026-06-20","name":"Roșia Montană Marathon","url":"https://www.rosiamontanamarathon.ro/","loc":"Roșia Montană","county":"AB","dist":"42 / 21 / 10 km","tags":["ultra"]},
+    {"d":"2026-06-20","name":"Cros Montan Traversare Igniș","url":"https://sites.google.com/view/crosignis","loc":"Baia Mare","county":"MM","dist":"23 / 14 km","tags":[]},
+    {"d":"2026-06-27","name":"Rodnei Sky Race","url":"https://rodneiskyrace.eu/","loc":"Borșa","county":"MM","dist":"35 / 21 / 16 km","tags":["sky"]},
+    {"d":"2026-06-27","name":"Sinaia Mountain Run","url":"https://sinaia.run/","loc":"Sinaia","county":"PH","dist":"21 / 10 km","tags":[]},
+    {"d":"2026-06-27","name":"Ultra Zărand History","url":"https://www.facebook.com/photo?fbid=1554165966109035&set=a.606580650867576","loc":"Șoimoș","county":"AR","dist":"64 / 23 / 9 km","tags":["ultra"]},
+    {"d":"2026-07-04","name":"Carpathia Trails","url":"https://www.facebook.com/events/749549654674495/","loc":"Cheile Grădiștei","county":"BV","dist":"102 / 57 / 45 / 36 / 23 / 6 km","tags":["ultra"]},
+    {"d":"2026-07-04","name":"Legendele Nemirei","url":"https://www.legendelenemirei.com/inscrieri-1","loc":"Slănic-Moldova","county":"BC","dist":"25 / 14 / 3 km","tags":[]},
+    {"d":"2026-07-04","name":"Cozia Mountain Run","url":"https://coziamountainrun.ro/","loc":"Căciulata","county":"VL","dist":"30 / 21 / 4 km","tags":[]},
+    {"d":"2026-07-10","d2":"2026-07-11","name":"Stâna de Vale Trail Race","url":"https://www.facebook.com/profile.php?id=61575894238907","loc":"Stâna de Vale","county":"BH","dist":"33 / 11 km + 8 km vertical","tags":["vertical"],"note":"etapă EMA Off-Road Running Circuit"},
+    {"d":"2026-07-10","d2":"2026-07-12","name":"Zalău Ultra Trail","url":"https://zut.run/","loc":"Zalău","county":"SJ","dist":"103 / 44 / 24 / 12,5 / 4 km","tags":["ultra"]},
+    {"d":"2026-07-11","name":"Predeal Forest Run","url":"https://predealforestrun.ro/","loc":"Predeal","county":"BV","dist":"38 / 32 / 24 / 13 km","tags":["pădure"]},
+    {"d":"2026-07-11","name":"Discover Valea Doftanei","url":"https://apedalforward.com/","loc":"Trăisteni","county":"PH","dist":"31 / 5 km","tags":[]},
+    {"d":"2026-07-18","name":"Maraton Bate Toaca","url":"https://www.batetoaca.ro/","loc":"Durău","county":"NT","dist":"31 / 18 km","tags":[],"status":"anulat"},
+    {"d":"2026-07-18","name":"Zărnești Challenge","url":"https://zarnestichallenge.ro/","loc":"Zărnești","county":"BV","dist":"16 / 8 / 3 km","tags":["obstacole"]},
+    {"d":"2026-07-18","name":"Buila Trail Race","url":"https://builatrailrace.ro/","loc":"Bărbătești","county":"VL","dist":"36 / 18 / 11 km","tags":[]},
+    {"d":"2026-07-18","name":"Burduf Challenge","url":"https://experiences.mytransylvania.ro/burduf-challenge/","loc":"Râu Sadului","county":"SB","dist":"21 / 14 km","tags":[]},
+    {"d":"2026-07-19","name":"Szent Gellért Cross","url":"https://szentgellertcross.ro/","loc":"Ditrău","county":"HG","dist":"23 / 8 km","tags":[]},
+    {"d":"2026-07-20","name":"Up to Postăvaru","url":"https://www.uptopostavaru.ro/alergare/","loc":"Poiana Brașov","county":"BV","dist":"13 / 7 km","tags":[],"status":"anulat"},
+    {"d":"2026-07-24","d2":"2026-07-26","name":"Bucovina Ultra Rocks by UTMB","url":"https://bucovinaultra.rocks/","loc":"Câmpulung Moldovenesc","county":"SV","dist":"114 / 72 / 48 / 33 / 20 / 16 / 5 km","tags":["ultra","utmb"]},
+    {"d":"2026-07-25","name":"Cindrel în Alergare","url":"https://www.inalergare.ro/","loc":"Păltiniș","county":"SB","dist":"91 / 46 / 23 / 12 km","tags":["ultra"]},
+    {"d":"2026-07-26","name":"Semimaratonul Țara de Piatră","url":"https://www.semimaraton.com/tara-de-piatra","loc":"Câmpeni","county":"AB","dist":"22 / 10 / 5 km","tags":[]},
+    {"d":"2026-07-29","d2":"2026-08-02","name":"Făgăraș Rocks!","url":"https://fagarasrocks.ro/","loc":"Făgăraș","county":"BV","dist":"141 / 127 / 70 / 35 / 20 / 10 / 4 km","tags":["ultra"],"status":"anulat"},
+    {"d":"2026-08-01","d2":"2026-08-02","name":"Mogoșa Everesting","url":"https://mogosaeveresting.ro/","loc":"Lacul Mogoșa","county":"MM","dist":"18 × 4,2 km = 76 km (D+8848)","tags":["ultra","vertical"]},
+    {"d":"2026-08-08","name":"Retezat Mountain Run","url":"https://retezat-maraton-rausor.ro/","loc":"Râușor","county":"HD","dist":"40 / 25 / 13 / 8 km","tags":[]},
+    {"d":"2026-08-14","d2":"2026-08-16","name":"Oltenia Forest Run","url":"https://www.ecosport.ro/","loc":"Băile Govora","county":"VL","dist":"21 / 7 km","tags":["pădure"]},
+    {"d":"2026-08-15","d2":"2026-08-16","name":"Fuga Lotrilor","url":"https://fugalotrilor.ro/","loc":"Brezoi","county":"VL","dist":"13 / 12 / 6 km","tags":[]},
+    {"d":"2026-08-22","name":"2X2 Race – Ultra Sky Marathon","url":"https://www.2x2race.ro/","loc":"Lacul Bâlea","county":"SB","dist":"45 km (D+4200)","tags":["ultra","sky"]},
+    {"d":"2026-08-22","name":"Via Transilvanica Maraton","url":"https://maraton.viatransilvanica.com/","loc":"Piatra Fântânele","county":"BN","dist":"40 / 22 / 10 km","tags":[]},
+    {"d":"2026-08-28","name":"Underdogs – The Backyard Ultra","url":"https://www.underdogsbackyardultra.com/","loc":"Brebu","county":"DB","dist":"bucle de 7 km, nelimitat","tags":["ultra"]},
+    {"d":"2026-08-29","name":"Oslea Run","url":"https://run.oslea.ro/","loc":"Valea Iarului","county":"HD","dist":"41 / 26 / 15 / 8,5 km","tags":[]},
+    {"d":"2026-08-29","name":"Scorilo Sky Race","url":"https://www.scoriloskyrace.ro/","loc":"Poiana Mărului","county":"CS","dist":"45 / 26 / 12 / 8 km","tags":["sky","ultra"]},
+    {"d":"2026-08-29","name":"Zarandia Run Challenge","url":"https://www.facebook.com/events/1038566262360784","loc":"Vața de Jos","county":"HD","dist":"23 / 11 km","tags":[]},
+    {"d":"2026-08-30","name":"Vrancea Montană Run","url":"https://www.facebook.com/events/863560126589251","loc":"Păulești","county":"VN","dist":"21 / 11 km","tags":[]},
+    {"d":"2026-08-30","name":"Epic Trail Run Bobâlna","url":"https://www.facebook.com/events/979952958102706","loc":"Bobâlna","county":"CJ","dist":"—","tags":[],"note":"posibil amânat — verifică pagina"},
+    {"d":"2026-09-04","d2":"2026-09-06","name":"Ciucaș X3","url":"https://ciucasx3.ro/","loc":"Cheia","county":"PH","dist":"39 / 22 / 9 km + vertical 3,8 km","tags":["vertical"]},
+    {"d":"2026-09-05","name":"CugiRace","url":"https://cugirace.ro/","loc":"Cugir","county":"AB","dist":"70 / 24 / 10 km","tags":["ultra"]},
+    {"d":"2026-09-05","name":"Maraton Castelul din Carpați","url":"https://www.facebook.com/Concursul.Castelul.din.Carpati","loc":"Vulcan","county":"HD","dist":"—","tags":[]},
+    {"d":"2026-09-05","name":"Opinca Trail – Holod Experience","url":"https://oradearunningculture.ro/evenimente/opinca-trail-holod-experience","loc":"Holod","county":"BH","dist":"22 / 16,5 / 10,5 km","tags":[]},
+    {"d":"2026-09-05","name":"Târsa Trail Race","url":"https://entertix.ro/events/36245/poteca-verde-viata-in-miscare-5-september-2026-sat-tarsa-com-bosorod.html","loc":"Târsa","county":"HD","dist":"21 / 8 / 3 km","tags":[]},
+    {"d":"2026-09-06","name":"Cheile Nerei Trail Run","url":"https://www.sascabike.ro","loc":"Sasca Română","county":"CS","dist":"21 / 12 / 5 km","tags":[]},
+    {"d":"2026-09-10","d2":"2026-09-13","name":"European Masters Off Road Championships","url":"https://www.runtransylvania.com/ro/european-masters-off-road-champhionships/","loc":"Râșnov","county":"BV","dist":"probe multiple","tags":["campionat"]},
+    {"d":"2026-09-12","name":"Woodrocks Trail Run","url":"https://www.facebook.com/events/659141377246292/","loc":"Petriș","county":"AR","dist":"—","tags":[]},
+    {"d":"2026-09-12","name":"Șureanu 4×2000","url":"https://asociatiaturismpemunte.ro/eveniment/sureanu/","loc":"Șugag","county":"AB","dist":"30 km","tags":[]},
+    {"d":"2026-09-12","name":"Maratonul Dragomirnei","url":"https://acstrib.ro/maratonul-dragomirnei/","loc":"Mitocu Dragomirnei","county":"SV","dist":"42 / 22 / 13 / 5 km","tags":["pădure","ultra"]},
+    {"d":"2026-09-12","name":"Heritage Run","url":"https://experiences.mytransylvania.ro/heritage-run-alergam-pentru-patrimoniu/","loc":"Biertan","county":"SB","dist":"22 / 10 / 7 km","tags":[]},
+    {"d":"2026-09-13","name":"Rombat Trail Run","url":"https://runnersclub.ro/rombat-trail-run/","loc":"Bistrița","county":"BN","dist":"21 / 10 / 5 km","tags":[]},
+    {"d":"2026-09-19","name":"Șiria Vertical Loop","url":"https://www.facebook.com/photo/?fbid=1289560226549231&set=a.565432002295394","loc":"Șiria","county":"AR","dist":"2 ore, bucle","tags":["vertical"]},
+    {"d":"2026-09-19","name":"Gușterița Trail Run","url":"https://gtr.ro/","loc":"Gușterița, Sibiu","county":"SB","dist":"21 / 10 / 5 km + 24 km echipe","tags":[]},
+    {"d":"2026-09-19","name":"Mogoșa Race","url":"https://mogosarace.ro/","loc":"Lacul Mogoșa","county":"MM","dist":"21 / 11 / 4 km","tags":[]},
+    {"d":"2026-09-26","name":"Semimaraton Porolissum","url":"https://porolissumtrail.ro/","loc":"Moigrad","county":"SJ","dist":"23 / 12 km","tags":[]},
+    {"d":"2026-09-26","name":"„Alerg Pentru Tine” Trail Run","url":"https://www.centrulsfluca.ro/alerg-pentru-tine.php","loc":"Sucevița","county":"SV","dist":"20 / 9 km","tags":[]},
+    {"d":"2026-09-26","name":"Getic Cross","url":"https://montera.ro/geticcross/","loc":"Bărbălani (Cuca)","county":"AG","dist":"22 / 8 km","tags":[]},
+    {"d":"2026-09-26","name":"Maraton Piatra Craiului","url":"https://www.circuitulcarpatilor.org/calendar-2026.html","loc":"Zărnești","county":"BV","dist":"38 / 14 km","tags":[]},
+    {"d":"2026-09-26","name":"Trivale Trail","url":"https://www.trivaletrail.ro/","loc":"Pitești","county":"AG","dist":"21 / 10 / 5 km","tags":["pădure"]},
+    {"d":"2026-10-03","name":"Omu Marathon","url":"https://www.omumarathon.com/","loc":"Bran","county":"BV","dist":"40 / 25 / 11 km","tags":[]},
+    {"d":"2026-10-03","name":"Veverița Night Run","url":"https://veveritanightrun.ro/","loc":"Vatra Dornei","county":"SV","dist":"18 / 10 km","tags":["noapte"]},
+    {"d":"2026-10-03","name":"Creasta Cocoșului Trail","url":"https://www.facebook.com/profile.php?id=61592779124107","loc":"Breb","county":"MM","dist":"20 km","tags":[]},
+    {"d":"2026-10-03","name":"Cozla Trail Run","url":"https://cozlatrailrun.ro/","loc":"Piatra-Neamț","county":"NT","dist":"11 / 3,5 km","tags":[]},
+    {"d":"2026-10-10","name":"Hercules Maraton","url":"https://hercules-maraton.ro/","loc":"Băile Herculane","county":"CS","dist":"43 / 21 / 4 km","tags":["ultra"]},
+    {"d":"2026-10-10","name":"Trascău Trail Run","url":"https://trascautrailrun.ro/","loc":"Rimetea","county":"AB","dist":"45 / 23,5 / 8,5 km","tags":["ultra"]},
+    {"d":"2026-10-16","d2":"2026-10-17","name":"Azuga Trail Race","url":"https://azuga.trailrace.ro/","loc":"Azuga","county":"PH","dist":"31 / 20 / 13 km + vertical","tags":["vertical"]},
+    {"d":"2026-10-16","d2":"2026-10-18","name":"Căsoaia Ultra Zărand","url":"https://www.facebook.com/photo?fbid=1554165966109035&set=a.606580650867576","loc":"Căsoaia","county":"AR","dist":"110 / 49 / 23 / 12 km","tags":["ultra"]},
+    {"d":"2026-10-24","name":"Felix Trail Run","url":"https://www.felixtrail.com/","loc":"Băile Felix","county":"BH","dist":"8 / 4 km","tags":[]},
+    {"d":"2026-10-31","name":"Subcarpați Trail Run by Night","url":"https://www.subcarpatitrailrun.ro/strbynight/","loc":"Cocorăștii Mislii","county":"PH","dist":"9 km","tags":["noapte"]},
+    {"d":"2026-10-31","name":"Hațeg Royal Trail","url":"https://hategroyaltrail.ro/","loc":"Hațeg","county":"HD","dist":"44 / 21 / 12 km","tags":["ultra"]},
+    {"d":"2026-11-07","name":"Istrița Xscape","url":"https://istritaxscape.ro/","loc":"Sărata Monteoru","county":"BZ","dist":"39 / 24 / 10 km","tags":[]},
+    {"d":"2026-12-01","name":"Eco Trail Ultra","url":"https://clujecotrail.com/","loc":"Cluj-Napoca","county":"CJ","dist":"50 / 25 / 15 / 7 km","tags":["ultra"]},
+    {"d":"2026-12-11","d2":"2026-12-13","name":"Everesting+ Ultra Zărand","url":"https://www.facebook.com/photo?fbid=1554165966109035&set=a.606580650867576","loc":"Căsoaia","county":"AR","dist":"10,7 km × 18 (D+10450) / ×16 / ×8 / ×1","tags":["ultra","vertical"]}
+  ]
+}
+
+</script>
+<script>
+const MONTHS=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+const MON_SHORT=["IAN","FEB","MAR","APR","MAI","IUN","IUL","AUG","SEP","OCT","NOI","DEC"];
+/* marcaje turistice românești, rotite pe luni */
+const MARCAJE=[
+  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><rect x="9" y="2" width="8" height="22" fill="#ce2b26"/></svg>',
+  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><rect x="10" y="3" width="6" height="20" fill="#1e5fa8"/><rect x="3" y="10" width="20" height="6" fill="#1e5fa8"/></svg>',
+  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><polygon points="13,4 23,22 3,22" fill="#dfa400"/></svg>',
+  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><circle cx="13" cy="13" r="8" fill="#ce2b26"/></svg>'
+];
+let DATA={events:[]};
+const state={q:"",tags:new Set(),showCancelled:true};
+
+const fmt=d=>{const [y,m,day]=d.split("-");return {m:+m-1,day:+day};};
+function rangeLabel(e){
+  const a=fmt(e.d);
+  if(!e.d2) return null;
+  const b=fmt(e.d2);
+  return (a.m===b.m)?`${a.day}–${b.day} ${MON_SHORT[a.m]}`:`${a.day} ${MON_SHORT[a.m]} – ${b.day} ${MON_SHORT[b.m]}`;
+}
+function matches(e){
+  if(!state.showCancelled && e.status==="anulat") return false;
+  if(state.tags.size && ![...state.tags].every(t=>(e.tags||[]).includes(t))) return false;
+  if(state.q){
+    const hay=(e.name+" "+e.loc+" "+e.county+" "+(e.dist||"")+" "+(e.tags||[]).join(" ")).toLowerCase();
+    if(!hay.includes(state.q)) return false;
+  }
+  return true;
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function render(){
+  const list=document.getElementById("list");
+  const evs=DATA.events.filter(matches).sort((a,b)=>a.d.localeCompare(b.d));
+  const byM=new Map();
+  evs.forEach(e=>{const m=fmt(e.d).m;(byM.get(m)||byM.set(m,[]).get(m)).push(e);});
+  let html="";
+  for(const [m,items] of [...byM.entries()].sort((a,b)=>a[0]-b[0])){
+    html+=`<section class="month" id="m${m}"><h2><span class="mk">${MARCAJE[m%4]}</span>${MONTHS[m]}<span class="rule"></span><span class="n">${items.length} curse</span></h2>`;
+    for(const e of items){
+      const a=fmt(e.d), rng=rangeLabel(e), canc=e.status==="anulat";
+      html+=`<article class="ev${canc?" cancelled":""}">
+        <div class="date"><span class="dd">${String(a.day).padStart(2,"0")}</span><span class="rng">${rng?esc(rng):MON_SHORT[a.m]}</span></div>
+        <div>
+          <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)}</a></h3>
+          <div class="meta">${esc(e.loc)}<span class="cty">${esc(e.county)}</span></div>
+          ${e.dist?`<div class="dist">${esc(e.dist)}</div>`:""}
+          ${(e.tags&&e.tags.length)?`<div class="tags">${e.tags.map(t=>`<span class="tag t-${esc(t)}">${esc(t)}</span>`).join("")}</div>`:""}
+          ${e.note?`<div class="note">⚠ ${esc(e.note)}</div>`:""}
+          ${canc?`<span class="stamp">Anulat</span>`:""}
+          <a class="out" href="${esc(e.url)}" target="_blank" rel="noopener">pagina cursei ↗</a>
+        </div>
+      </article>`;
+    }
+    html+="</section>";
+  }
+  list.innerHTML=html||`<p class="empty">Nicio cursă nu se potrivește filtrelor. Șterge căutarea sau dezactivează un filtru.</p>`;
+  const tot=DATA.events.length;
+  document.getElementById("count").textContent=`${evs.length} / ${tot}`;
+  drawRidge();
+}
+function drawRidge(){
+  const svg=document.getElementById("ridge");
+  const counts=Array.from({length:12},()=>0);
+  DATA.events.forEach(e=>counts[fmt(e.d).m]++);
+  const max=Math.max(...counts,1), W=880,H=88,base=H-16,colW=W/12;
+  let bars="",pts="";
+  counts.forEach((c,i)=>{
+    const h=Math.round((c/max)*(base-14));
+    const x=i*colW, y=base-h;
+    pts+=`${x+colW/2},${y} `;
+    bars+=`<g class="col" tabindex="0" role="link" aria-label="${MONTHS[i]}, ${c} curse" data-m="${i}">
+      <rect x="${x+4}" y="0" width="${colW-8}" height="${base}" fill="transparent"/>
+      <rect class="bar" x="${x+colW/2-8}" y="${y}" width="16" height="${h}"/>
+      <text x="${x+colW/2}" y="${H-3}">${MON_SHORT[i]}</text>
+    </g>`;
+  });
+  svg.innerHTML=`<line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#1f2a1d" stroke-width="1.5"/>`+bars+`<polyline points="${pts.trim()}"/>`;
+  svg.querySelectorAll(".col").forEach(g=>{
+    const go=()=>{const t=document.getElementById("m"+g.dataset.m);if(t)t.scrollIntoView({block:"start"});};
+    g.addEventListener("click",go);
+    g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go();}});
+  });
+}
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
+document.querySelectorAll(".chip[data-tag]").forEach(b=>b.addEventListener("click",()=>{
+  const t=b.dataset.tag, on=b.getAttribute("aria-pressed")==="true";
+  b.setAttribute("aria-pressed",String(!on));
+  on?state.tags.delete(t):state.tags.add(t);render();
+}));
+document.getElementById("showCancelled").addEventListener("click",e=>{
+  state.showCancelled=!state.showCancelled;
+  e.currentTarget.setAttribute("aria-pressed",String(state.showCancelled));render();
+});
+DATA=JSON.parse(document.getElementById("data").textContent);
+document.getElementById("gen").textContent=`Ultima actualizare a datelor: ${DATA.generated}.`;
+render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

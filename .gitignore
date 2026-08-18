@@ -1,0 +1,5 @@
+# Keep the original import archive locally; the extracted sources are canonical.
+munte2026.zip
+
+# Local preview and OS files.
+.DS_Store
