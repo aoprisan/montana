@@ -1,17 +1,17 @@
-# Munte 2026 — cursele montane din România
+# Calendar Trail
 
 [Deschide aplicația](https://aoprisan.github.io/montana/)
 
 Static PWA: calendarul curselor de alergare montană / trail / sky / vertical din România în 2026,
-cu link către pagina oficială a fiecărei curse. ~116 evenimente, ianuarie–decembrie.
+cu link către pagina oficială a fiecărei curse. Peste 100 de evenimente, ianuarie–decembrie.
 
 ## Structură
 - `app/` — tot ce trebuie publicat (GitHub Pages ready)
-  - `index.html` — aplicația completă, cu datele **embedded** (merge și deschis direct din fișier)
+  - `index.html` — aplicația și o copie embedded folosită doar ca fallback offline
   - `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-192/512.png` — PWA (installabil, offline)
-  - `events.json` — aceleași date, ca fișier separat (sursa pentru viitorul scraper)
-- `scraper/scrape.mjs` — parcat deocamdată: regenerator de events.json din calendarul
-  comunitar vladcarbune.ro (Node ≥18 + cheerio). Nefolosit de aplicația statică.
+  - `events.json` — sursa canonică încărcată de aplicație la fiecare pornire
+- `scraper/` — worker Rust care actualizează sigur `events.json` din calendarul comunitar
+- `deploy/montana-scraper.{service,timer}` — job systemd pornit zilnic pe VPS
 
 ## Dezvoltare locală
 
@@ -27,6 +27,13 @@ Deschide apoi `http://localhost:8000`. Verificarea folosită și în CI se rulea
 node scripts/validate.mjs
 ```
 
+Testele scraperului și o verificare live fără modificarea datelor:
+
+```sh
+cargo test --locked --manifest-path scraper/Cargo.toml
+cargo run --locked --manifest-path scraper/Cargo.toml -- --dry-run
+```
+
 ## Deploy
 
 Workflow-ul [`.github/workflows/pages.yml`](.github/workflows/pages.yml) validează PWA-ul, împachetează
@@ -37,8 +44,28 @@ Pentru prima publicare, sursa din **Settings → Pages → Build and deployment*
 **GitHub Actions**. După deploy, site-ul este disponibil la
 `https://aoprisan.github.io/montana/`.
 
+Pentru publicarea pe VPS-ul comun, cu Caddy, TLS automat și actualizare zilnică:
+
+```sh
+./scripts/deploy-vps.sh
+```
+
+Valorile implicite sunt `root@93.115.53.191` și `calendartrail.ro`; ambele pot fi
+suprascrise prin argumente sau prin `MONTANA_DEPLOY_HOST` și `MONTANA_DEPLOY_DOMAIN`.
+Mașina locală trebuie să aibă Docker, iar VPS-ul Caddy și systemd. Scriptul compilează un binar
+Linux x86-64 într-un build Docker reproductibil, instalează serviciul cu utilizator neprivilegiat `montana`, îl rulează o dată și
+activează timerul zilnic de la 05:17 (Europe/Bucharest), cu maximum 30 de minute de întârziere aleatorie.
+
+Starea și ultima execuție pot fi verificate cu:
+
+```sh
+systemctl status montana-scraper.timer
+journalctl -u montana-scraper.service -n 100 --no-pager
+```
+
 ## Date
-Compilate manual (aug 2026) din: vladcarbune.ro/calendar-evenimente-alergare-2026,
-fra.ro/competitii/calendar, runmap.ro. Cursele anulate (Făgăraș Rocks!, Up to Postăvaru,
-Bate Toaca, Scaunul Domnului) sunt păstrate cu ștampila ANULAT.
-Pentru actualizări editează `<script type="application/json" id="data">` din index.html.
+Datele inițiale au fost compilate manual (aug 2026) din vladcarbune.ro, fra.ro și runmap.ro.
+Workerul actualizează intrările recunoscute și adaugă curse noi, dar păstrează intrările curate
+manual care nu mai apar în sursa principală. Înainte de scriere verifică schema, URL-urile,
+numărul de rezultate și abaterea față de calendarul existent. Scrierea este atomică, iar ultimele
+12 versiuni sunt păstrate în `/opt/montana/backups`. La orice eroare rămâne publicat ultimul fișier valid.

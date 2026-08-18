@@ -42,8 +42,19 @@ const embedded = JSON.parse(embeddedMatch[1]);
 if (!Array.isArray(events.events) || events.events.length === 0) {
   throw new Error("events.json does not contain any events");
 }
-if (JSON.stringify(events) !== JSON.stringify(embedded)) {
-  throw new Error("events.json and the event data embedded in index.html differ");
+if (!Array.isArray(embedded.events) || embedded.events.length === 0) {
+  throw new Error("index.html fallback does not contain any events");
+}
+for (const [name, calendar] of [["events.json", events], ["embedded fallback", embedded]]) {
+  for (const event of calendar.events) {
+    if (!/^2026-\d{2}-\d{2}$/.test(event.d) || Number.isNaN(Date.parse(`${event.d}T12:00:00Z`))) {
+      throw new Error(`${name} contains an invalid date for ${event.name ?? "unnamed event"}`);
+    }
+    const url = new URL(event.url);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error(`${name} contains an unsafe URL for ${event.name ?? "unnamed event"}`);
+    }
+  }
 }
 if (!html.includes('rel="manifest" href="manifest.webmanifest"')) {
   throw new Error("index.html does not link the web app manifest");
@@ -110,6 +121,12 @@ const elements = new Map(
   ),
 );
 elements.get("data").textContent = JSON.stringify({
+  generated: "2026-08-17",
+  events: [
+    { d: "2026-08-17", name: "Stale fallback", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
+  ],
+});
+const currentEvents = {
   generated: "2026-08-18",
   events: [
     { d: "2026-08-16", d2: "2026-08-17", name: "Past", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
@@ -117,7 +134,7 @@ elements.get("data").textContent = JSON.stringify({
     { d: "2026-08-18", name: "Today", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
     { d: "2026-08-19", name: "Future", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
   ],
-});
+};
 elements.get("showCancelled").setAttribute("aria-pressed", "true");
 elements.get("onlyUpcoming").setAttribute("aria-pressed", "true");
 elements.get("allTags").setAttribute("aria-pressed", "true");
@@ -128,14 +145,20 @@ class FixedDate extends Date {
   }
 }
 
-runInNewContext(appScript, {
+await runInNewContext(appScript, {
   Date: FixedDate,
+  fetch: async () => ({ ok: true, json: async () => currentEvents }),
+  console,
   document: {
     getElementById: (id) => elements.get(id),
     querySelectorAll: () => [],
   },
   navigator: {},
 });
+
+if (elements.get("list").innerHTML.includes("Stale fallback")) {
+  throw new Error("application ignored the current events.json response");
+}
 
 if (!elements.get("count").innerHTML.startsWith("3 curse")) {
   throw new Error("upcoming-only default returned the wrong event count");

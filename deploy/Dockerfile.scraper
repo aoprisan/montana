@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1.7
+FROM rust:1.97.0-bookworm AS build
+
+WORKDIR /work
+COPY scraper/Cargo.toml scraper/Cargo.lock ./
+COPY scraper/src ./src
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/work/target \
+    cargo build --locked --release && \
+    cp /work/target/release/montana-scraper /tmp/montana-scraper
+
+FROM scratch AS artifact
+COPY --from=build /tmp/montana-scraper /montana-scraper

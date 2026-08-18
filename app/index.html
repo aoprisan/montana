@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Munte 2026 — cursele montane din România</title>
+<title>Calendar Trail</title>
 <meta name="description" content="Calendarul curselor de alergare montană și trail din România în 2026, cu linkuri către paginile oficiale.">
 <meta name="theme-color" content="#1f2a1d">
+<meta name="apple-mobile-web-app-title" content="Calendar Trail">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -156,7 +157,7 @@ footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
 <body>
 <header class="site">
   <div class="wrap header-inner">
-    <div class="brand"><span class="blaze-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Munte / 2026</span></div>
+    <div class="brand"><span class="blaze-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Calendar Trail</span></div>
     <div class="hero">
       <div class="hero-copy">
         <h1>Cursele care urmează.</h1>
@@ -446,11 +447,28 @@ document.getElementById("onlyUpcoming").addEventListener("click",e=>{
   state.onlyUpcoming=!state.onlyUpcoming;
   e.currentTarget.setAttribute("aria-pressed",String(state.onlyUpcoming));render();
 });
-DATA=JSON.parse(document.getElementById("data").textContent);
-document.getElementById("gen").textContent=`Date actualizate la ${DATA.generated}.`;
-renderNextRace();
-render();
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+async function loadData(){
+  const fallback=JSON.parse(document.getElementById("data").textContent);
+  if(typeof location!=="undefined"&&location.protocol==="file:") return fallback;
+  try{
+    const response=await fetch("events.json",{cache:"no-store"});
+    if(!response.ok) throw new Error(`events.json: ${response.status}`);
+    const current=await response.json();
+    if(!current||!Array.isArray(current.events)||!current.events.length) throw new Error("events.json invalid");
+    return current;
+  }catch(error){
+    console.warn("Datele actualizate nu sunt disponibile; folosesc copia offline.",error);
+    return fallback;
+  }
+}
+async function init(){
+  DATA=await loadData();
+  document.getElementById("gen").textContent=`Date actualizate la ${DATA.generated}.`;
+  renderNextRace();
+  render();
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+globalThis.__appReady=init();
 </script>
 </body>
 </html>

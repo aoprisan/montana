@@ -1,0 +1,23 @@
+www.__DOMAIN__ {
+    redir https://__DOMAIN__{uri} permanent
+}
+
+__DOMAIN__ {
+    root * /opt/montana/current
+    encode zstd gzip
+    file_server
+
+    @service_worker path /sw.js
+    header @service_worker Cache-Control "no-cache"
+
+    @event_data path /events.json
+    header @event_data Cache-Control "no-store"
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+}

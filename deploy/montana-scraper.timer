@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh calendartrail.ro competition data daily
+
+[Timer]
+OnCalendar=*-*-* 05:17:00 Europe/Bucharest
+RandomizedDelaySec=30m
+Persistent=true
+Unit=montana-scraper.service
+
+[Install]
+WantedBy=timers.target

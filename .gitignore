@@ -3,3 +3,6 @@ munte2026.zip
 
 # Local preview and OS files.
 .DS_Store
+
+# Rust build artifacts.
+scraper/target/

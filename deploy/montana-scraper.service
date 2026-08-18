@@ -1,0 +1,20 @@
+[Unit]
+Description=Refresh calendartrail.ro competition data
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=montana
+Group=montana
+WorkingDirectory=/opt/montana/current
+ExecStart=/opt/montana/bin/montana-scraper --output /opt/montana/current/events.json --backup-dir /opt/montana/backups --minimum-events 50 --minimum-match-percent 50 --maximum-growth-percent 25
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/montana/releases /opt/montana/backups
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+LockPersonality=true
+MemoryDenyWriteExecute=true
+UMask=0022
