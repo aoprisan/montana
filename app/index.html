@@ -153,6 +153,95 @@ footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
 }
 @media (max-width:420px){.next-meta{grid-template-columns:1fr}.toggles{align-items:flex-start;flex-direction:column}.toggle{width:100%;justify-content:space-between}.hero-copy h1{font-size:50px}}
 </style>
+<style>
+.view-tabs{position:sticky;top:0;z-index:30;background:var(--white);border-bottom:1px solid var(--line)}
+.view-tabs-inner{display:grid;grid-template-columns:repeat(3,1fr)}
+.view-tab{height:78px;border:0;border-right:1px solid var(--line);background:transparent;position:relative;cursor:pointer;font:800 22px/1 var(--disp);letter-spacing:.035em;text-transform:uppercase}
+.view-tab:first-child{border-left:1px solid var(--line)}
+.view-tab:hover{color:var(--orange)}
+.view-tab[aria-selected=true]{color:var(--orange)}
+.view-tab[aria-selected=true]::after{content:"";position:absolute;left:7%;right:7%;bottom:-1px;height:3px;background:var(--orange)}
+.view-tab:focus-visible,.save-btn:focus-visible,.calendar-nav:focus-visible{outline:3px solid color-mix(in srgb,var(--orange) 36%,transparent);outline-offset:-3px}
+body[data-view=calendar] header.site,body[data-view=selected] header.site{min-height:0}
+body[data-view=calendar] .header-inner,body[data-view=selected] .header-inner{padding:24px 0}
+body[data-view=calendar] .hero,body[data-view=selected] .hero{display:none}
+.view-panel[hidden]{display:none}
+.ev{grid-template-columns:118px minmax(240px,1.25fr) minmax(180px,.85fr) minmax(180px,.8fr) 48px 38px;min-height:92px}
+.event-main{min-width:0;padding-right:20px}
+.event-main .tags{margin-top:8px}
+.event-main .note{margin-top:7px}
+.save-btn{position:relative;z-index:3;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line-dark);background:transparent;cursor:pointer;color:var(--ink);transition:.15s ease}
+.save-btn:hover{border-color:var(--orange);color:var(--orange)}
+.save-btn[aria-pressed=true]{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.save-btn .icon{width:21px;height:21px}
+
+.calendar-view,.selection-view{padding:42px 0 70px;min-height:620px}
+.view-heading{display:flex;align-items:end;justify-content:space-between;gap:32px;padding-bottom:24px;border-bottom:1px solid var(--ink)}
+.view-heading h1{margin:0;font:800 clamp(42px,5vw,70px)/.9 var(--disp);text-transform:uppercase}
+.view-heading p{max-width:500px;margin:0;color:var(--ink-soft);font-size:14px}
+.calendar-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;border-bottom:1px solid var(--line)}
+.calendar-toolbar h2{margin:0;text-align:center;font:800 34px/1 var(--disp);text-transform:uppercase}
+.calendar-nav{height:68px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
+.calendar-nav:hover{color:var(--orange)}
+.calendar-scroll{overflow-x:auto}
+.weekdays,.calendar-grid{min-width:840px;display:grid;grid-template-columns:repeat(7,1fr)}
+.weekdays{border-bottom:1px solid var(--ink)}
+.weekdays span{padding:12px 10px;color:var(--ink-soft);font:600 10px var(--mono);text-transform:uppercase;border-right:1px solid var(--line)}
+.calendar-grid{border-left:1px solid var(--line)}
+.day-cell{min-height:148px;padding:10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(251,252,248,.44)}
+.day-cell.is-out{background:transparent;color:#9da49f}
+.day-cell.is-today{box-shadow:inset 0 0 0 2px var(--orange)}
+.day-number{font:700 15px var(--mono)}
+.day-events{display:grid;gap:5px;margin-top:9px}
+.cal-event{display:grid;grid-template-columns:1fr 25px;align-items:stretch;border-left:3px solid var(--forest);background:var(--paper-2);font:700 12px/1.15 var(--disp)}
+.cal-event.cancelled{opacity:.55;text-decoration:line-through}
+.cal-event a{padding:8px 7px;text-decoration:none;min-width:0}
+.cal-event a:hover{color:var(--orange)}
+.cal-save{border:0;border-left:1px solid var(--line);background:transparent;padding:0;cursor:pointer;color:var(--ink)}
+.cal-save[aria-pressed=true]{background:var(--orange);color:white}
+.cal-save svg{width:14px;height:14px}
+.calendar-legend{display:flex;justify-content:space-between;gap:24px;margin-top:18px;color:var(--ink-soft);font-size:11px}
+
+.selection-summary{display:grid;grid-template-columns:.65fr 1.35fr;border:1px solid var(--line-dark);margin:28px 0 18px}
+.summary-item{min-height:104px;display:flex;flex-direction:column;justify-content:center;padding:20px 28px;border-right:1px solid var(--line)}
+.summary-item:last-child{border-right:0}
+.summary-label{font:700 13px var(--disp);text-transform:uppercase;letter-spacing:.05em}
+.summary-value{margin-top:6px;font:800 36px/1 var(--disp);color:var(--orange)}
+.summary-value.is-count{color:var(--ink)}
+.summary-note{font-size:12px;color:var(--ink-soft)}
+.summary-note strong{display:block;color:var(--ink);font:700 14px var(--disp);text-transform:uppercase;margin-bottom:5px}
+.selection-table{border-top:1px solid var(--ink)}
+.selection-head,.selection-row{display:grid;grid-template-columns:130px minmax(250px,1.3fr) minmax(190px,.8fr) minmax(200px,.82fr) 104px;align-items:center;gap:18px}
+.selection-head{min-height:48px;border-bottom:1px solid var(--ink);font:700 11px var(--body);text-transform:uppercase;letter-spacing:.04em}
+.selection-row{min-height:82px;border-bottom:1px solid var(--line)}
+.selection-row h3{margin:0;font:700 19px/1.1 var(--disp)}
+.selection-row h3 a{text-decoration:none}.selection-row h3 a:hover{color:var(--orange)}
+.selection-row h3 .icon{display:inline-block;width:15px;height:15px;margin-left:5px;vertical-align:-2px}
+.selection-date{font:700 14px var(--mono);text-transform:uppercase}
+.selection-loc{color:var(--ink-soft);font-size:13px}
+.selection-distance{font-size:13px;color:var(--ink-soft)}
+.remove-btn{border:0;background:transparent;color:var(--orange);cursor:pointer;font:700 13px var(--disp);text-transform:uppercase;padding:12px 0}
+.remove-btn:hover{text-decoration:underline;text-underline-offset:4px}
+.selection-empty{margin-top:28px;border:1px dashed var(--line-dark);padding:52px;text-align:center}
+.selection-empty h2{margin:0 0 8px;font:800 32px var(--disp);text-transform:uppercase}
+.selection-empty p{margin:0 0 22px;color:var(--ink-soft)}
+.go-races{border:1px solid var(--ink);background:var(--forest);color:var(--white);padding:14px 20px;cursor:pointer;font:700 14px var(--disp);text-transform:uppercase}
+.source-note{display:flex;justify-content:space-between;gap:24px;margin-top:18px;color:var(--ink-soft);font-size:11px}
+
+@media(max-width:1080px){
+  .view-tabs{position:relative}.ev{grid-template-columns:105px minmax(220px,1fr) minmax(170px,.75fr) minmax(160px,.7fr) 44px 34px}
+  .selection-head,.selection-row{grid-template-columns:110px minmax(220px,1fr) minmax(170px,.72fr) minmax(180px,.74fr) 76px;gap:12px}
+}
+@media(max-width:760px){
+  .view-tab{height:62px;font-size:17px}.view-heading{display:block}.view-heading p{margin-top:12px}
+  .ev{grid-template-columns:68px 1fr 42px 32px;align-items:start}.event-main{padding-right:0}.meta,.dist{grid-column:2;margin-top:8px}.save-btn{grid-column:3;grid-row:1/4}.out{grid-column:4;grid-row:1/4}
+  .calendar-view,.selection-view{padding-top:28px}.weekdays,.calendar-grid{min-width:760px}.day-cell{min-height:132px}
+  .selection-summary{grid-template-columns:1fr}.summary-item{padding:17px;min-height:92px;border-right:0;border-bottom:1px solid var(--line)}.summary-item:last-child{border-bottom:0}
+  .selection-head{display:none}.selection-row{display:grid;grid-template-columns:82px 1fr 32px;gap:8px 12px;padding:18px 0}.selection-row h3{font-size:20px}.selection-loc,.selection-distance{grid-column:2}.remove-btn{grid-column:3;grid-row:1/4;font-size:0}.remove-btn::after{content:"×";font:700 28px var(--disp)}
+  .calendar-legend,.source-note{display:block}.calendar-legend span,.source-note span{display:block;margin-top:5px}.selection-empty{padding:36px 20px}
+}
+@media(max-width:420px){.view-tab{font-size:15px}.summary-value{font-size:30px}}
+</style>
 </head>
 <body>
 <header class="site">
@@ -167,6 +256,16 @@ footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
     </div>
   </div>
 </header>
+
+<nav class="view-tabs" aria-label="Vizualizări calendar">
+  <div class="wrap view-tabs-inner" role="tablist">
+    <button class="view-tab" id="tab-races" role="tab" aria-selected="true" aria-controls="panel-races" data-view="races">Curse</button>
+    <button class="view-tab" id="tab-calendar" role="tab" aria-selected="false" aria-controls="panel-calendar" data-view="calendar" tabindex="-1">Calendar</button>
+    <button class="view-tab" id="tab-selected" role="tab" aria-selected="false" aria-controls="panel-selected" data-view="selected" tabindex="-1">Selecția mea <span id="savedTabCount" aria-label="curse salvate"></span></button>
+  </div>
+</nav>
+
+<div class="view-panel" id="panel-races" role="tabpanel" aria-labelledby="tab-races">
 
 <div class="filters">
   <div class="wrap filter-row">
@@ -197,6 +296,36 @@ footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
 </nav>
 
 <main class="wrap" id="list" aria-live="polite"></main>
+</div>
+
+<section class="view-panel calendar-view" id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+  <div class="wrap">
+    <header class="view-heading">
+      <h1>Calendar 2026</h1>
+      <p>Vezi aglomerația fiecărei luni și salvează cursele care merită un loc în sezonul tău.</p>
+    </header>
+    <div class="calendar-toolbar">
+      <button class="calendar-nav" id="calendarPrev" aria-label="Luna precedentă"></button>
+      <h2 id="calendarTitle"></h2>
+      <button class="calendar-nav" id="calendarNext" aria-label="Luna următoare"></button>
+    </div>
+    <div class="calendar-scroll">
+      <div class="weekdays" aria-hidden="true"><span>Luni</span><span>Marți</span><span>Miercuri</span><span>Joi</span><span>Vineri</span><span>Sâmbătă</span><span>Duminică</span></div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+    <div class="calendar-legend"><span>Selectează semnul de carte pentru a păstra o cursă.</span><span>Cursele anulate apar barate.</span></div>
+  </div>
+</section>
+
+<section class="view-panel selection-view" id="panel-selected" role="tabpanel" aria-labelledby="tab-selected" hidden>
+  <div class="wrap">
+    <header class="view-heading">
+      <h1>Cursele tale, într-un singur loc.</h1>
+      <p>Păstrează cursele preferate și construiește-ți sezonul într-o listă simplă, disponibilă pe acest dispozitiv.</p>
+    </header>
+    <div id="selectionContent" aria-live="polite"></div>
+  </div>
+</section>
 
 <footer>
   <div class="wrap footer-inner">
@@ -338,18 +467,38 @@ footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
 const MONTHS=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
 const MON_SHORT=["IAN","FEB","MAR","APR","MAI","IUN","IUL","AUG","SEP","OCT","NOI","DEC"];
 let DATA={events:[]};
-const state={q:"",tags:new Set(),onlyUpcoming:true,showCancelled:true};
 const now=new Date();
 const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+const initialMonth=now.getFullYear()===2026?now.getMonth():0;
+const state={q:"",tags:new Set(),onlyUpcoming:true,showCancelled:true,view:"races",calendarMonth:initialMonth,saved:{}};
 
 const ICONS={
   location:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/></svg>',
   mountain:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m2.5 19 6.2-10 3.1 4.7L15.7 7l5.8 12h-19Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter"/><path d="m7.1 11.6 1.7 1.2 1.4-1.1m4.2-2.3 1.6 1.4 1.5-1" stroke="currentColor" stroke-width="1.4"/></svg>',
   calendar:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4.5h14a2 2 0 0 1 2 2V20H3V6.5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.7"/><path d="M7 2v5M17 2v5M3 9h18" stroke="currentColor" stroke-width="1.7"/></svg>',
-  out:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>'
+  out:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>',
+  bookmark:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3.5h12v17l-6-4-6 4v-17Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="miter"/></svg>',
+  prev:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>',
+  next:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>'
 };
 
 const fmt=d=>{const [y,m,day]=d.split("-");return {m:+m-1,day:+day};};
+const eventKey=e=>`${e.d}|${e.name}`;
+function readSaved(){
+  try{const value=JSON.parse(localStorage.getItem("calendar-trail:saved")||"{}");return value&&typeof value==="object"?value:{};}catch{return {};}
+}
+function writeSaved(){try{localStorage.setItem("calendar-trail:saved",JSON.stringify(state.saved));}catch{}}
+function toggleSaved(e){
+  const key=eventKey(e);
+  if(state.saved[key]) delete state.saved[key];
+  else state.saved[key]={};
+  writeSaved();renderSavedState();
+}
+function renderSavedState(){
+  render();renderCalendar();renderSelection();
+  const count=Object.keys(state.saved).length;
+  document.getElementById("savedTabCount").textContent=count?` · ${count}`:"";
+}
 function rangeLabel(e){
   const a=fmt(e.d);
   if(!e.d2) return null;
@@ -396,12 +545,14 @@ function render(){
       const a=fmt(e.d), rng=rangeLabel(e), canc=e.status==="anulat";
       html+=`<article class="ev${canc?" cancelled":""}">
         <div class="date"><span class="dd">${String(a.day).padStart(2,"0")}</span><span class="rng">${rng?esc(rng):MON_SHORT[a.m]}</span></div>
-        <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)}</a></h3>
+        <div class="event-main"><h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)}</a></h3>
+          ${canc?`<span class="status">Anulat</span>`:(e.tags&&e.tags.length)?`<div class="tags">${e.tags.map(t=>`<span class="tag t-${esc(t)}">${esc(t)}</span>`).join("")}</div>`:""}
+          ${e.note?`<div class="note">Atenție: ${esc(e.note)}</div>`:""}
+        </div>
         <div class="meta">${ICONS.location}<span>${esc(e.loc)}, <span class="cty">${esc(e.county)}</span></span></div>
         ${e.dist?`<div class="dist">${ICONS.mountain}<span>${esc(e.dist)}</span></div>`:`<div></div>`}
-        ${canc?`<span class="status">Anulat</span>`:(e.tags&&e.tags.length)?`<div class="tags">${e.tags.map(t=>`<span class="tag t-${esc(t)}">${esc(t)}</span>`).join("")}</div>`:`<div></div>`}
+        <button class="save-btn" data-save="${esc(eventKey(e))}" aria-pressed="${String(Boolean(state.saved[eventKey(e)]))}" aria-label="${state.saved[eventKey(e)]?"Elimină din selecție":"Salvează cursa"}: ${esc(e.name)}">${ICONS.bookmark}</button>
         <a class="out" href="${esc(e.url)}" target="_blank" rel="noopener" aria-label="Pagina oficială: ${esc(e.name)}">${ICONS.out}</a>
-        ${e.note?`<div class="note">Atenție: ${esc(e.note)}</div>`:""}
       </article>`;
     }
     html+="</section>";
@@ -410,6 +561,55 @@ function render(){
   const tot=DATA.events.length;
   document.getElementById("count").innerHTML=`${evs.length} ${evs.length===1?"cursă":"curse"}<small>din ${tot} în calendar</small>`;
   drawMonths(evs);
+}
+function calendarDate(year,month,day){return `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;}
+function renderCalendar(){
+  const grid=document.getElementById("calendarGrid");
+  const month=state.calendarMonth, year=2026;
+  document.getElementById("calendarTitle").textContent=`${MONTHS[month]} ${year}`;
+  document.getElementById("calendarPrev").disabled=month===0;
+  document.getElementById("calendarNext").disabled=month===11;
+  const first=new Date(year,month,1), offset=(first.getDay()+6)%7;
+  const start=new Date(year,month,1-offset);
+  let html="";
+  for(let i=0;i<42;i++){
+    const date=new Date(start);date.setDate(start.getDate()+i);
+    const iso=calendarDate(date.getFullYear(),date.getMonth(),date.getDate());
+    const out=date.getMonth()!==month;
+    const events=out?[]:DATA.events.filter(e=>e.d===iso);
+    html+=`<div class="day-cell${out?" is-out":""}${iso===today?" is-today":""}"><span class="day-number">${date.getDate()}</span><div class="day-events">`;
+    for(const e of events){
+      const key=eventKey(e), saved=Boolean(state.saved[key]);
+      html+=`<div class="cal-event${e.status==="anulat"?" cancelled":""}"><a href="${esc(e.url)}" target="_blank" rel="noopener" title="${esc(e.loc)} · ${esc(e.dist)}">${esc(e.name)}</a><button class="cal-save" data-save="${esc(key)}" aria-pressed="${String(saved)}" aria-label="${saved?"Elimină din selecție":"Salvează cursa"}: ${esc(e.name)}">${ICONS.bookmark}</button></div>`;
+    }
+    html+="</div></div>";
+  }
+  grid.innerHTML=html;
+}
+function renderSelection(){
+  const target=document.getElementById("selectionContent");
+  const selected=DATA.events.filter(e=>state.saved[eventKey(e)]).sort((a,b)=>a.d.localeCompare(b.d));
+  for(const key of Object.keys(state.saved)) if(!DATA.events.some(e=>eventKey(e)===key)) delete state.saved[key];
+  if(!selected.length){
+    target.innerHTML=`<div class="selection-empty"><h2>Nu ai curse salvate</h2><p>Explorează lista și păstrează cursele pe care vrei să le planifici.</p><button class="go-races" data-go-races>Vezi cursele</button></div>`;
+    return;
+  }
+  let rows="";
+  for(const e of selected){
+    const key=eventKey(e);
+    rows+=`<article class="selection-row"><time class="selection-date" datetime="${esc(e.d)}">${String(fmt(e.d).day).padStart(2,"0")} ${MON_SHORT[fmt(e.d).m]} 2026</time><h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)} ${ICONS.out}</a></h3><span class="selection-loc">${esc(e.loc)}, ${esc(e.county)}</span><div class="selection-distance">${esc(e.dist||"Distanță nepublicată")}</div><button class="remove-btn" data-save="${esc(key)}">Elimină</button></article>`;
+  }
+  target.innerHTML=`<section class="selection-summary" aria-label="Rezumatul selecției"><div class="summary-item"><span class="summary-label">Curse selectate</span><strong class="summary-value is-count">${selected.length}</strong></div><div class="summary-item summary-note"><strong>Selecția ta rămâne aici.</strong>Cursele salvate sunt păstrate local în acest browser.</div></section><div class="selection-table"><div class="selection-head" aria-hidden="true"><span>Data</span><span>Cursă</span><span>Locație</span><span>Distanțe</span><span>Acțiuni</span></div>${rows}</div><div class="source-note"><span>Verifică pagina oficială înainte de înscriere.</span></div>`;
+}
+function setView(view,{updateHash=true}={}){
+  if(!["races","calendar","selected"].includes(view)) view="races";
+  state.view=view;document.body.dataset.view=view;
+  document.querySelectorAll(".view-tab").forEach(tab=>{const active=tab.dataset.view===view;tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;});
+  document.querySelectorAll(".view-panel").forEach(panel=>panel.hidden=panel.id!==`panel-${view}`);
+  if(view==="calendar") renderCalendar();
+  if(view==="selected") renderSelection();
+  if(updateHash&&typeof history!=="undefined") history.replaceState(null,"",view==="races"?location.pathname+location.search:`#${view==="selected"?"selectia-mea":"calendar"}`);
+  window.scrollTo?.({top:0,behavior:"instant"});
 }
 function drawMonths(evs){
   const nav=document.getElementById("months");
@@ -447,6 +647,20 @@ document.getElementById("onlyUpcoming").addEventListener("click",e=>{
   state.onlyUpcoming=!state.onlyUpcoming;
   e.currentTarget.setAttribute("aria-pressed",String(state.onlyUpcoming));render();
 });
+document.getElementById("list").addEventListener("click",e=>{const button=e.target.closest?.("[data-save]");if(!button)return;const race=DATA.events.find(event=>eventKey(event)===button.dataset.save);if(race)toggleSaved(race);});
+document.getElementById("calendarGrid").addEventListener("click",e=>{const button=e.target.closest?.("[data-save]");if(!button)return;const race=DATA.events.find(event=>eventKey(event)===button.dataset.save);if(race)toggleSaved(race);});
+document.getElementById("selectionContent").addEventListener("click",e=>{
+  const button=e.target.closest?.("[data-save]");if(button){const race=DATA.events.find(event=>eventKey(event)===button.dataset.save);if(race)toggleSaved(race);return;}
+  if(e.target.closest?.("[data-go-races]")) setView("races");
+});
+document.querySelectorAll(".view-tab").forEach(tab=>{
+  tab.addEventListener("click",()=>setView(tab.dataset.view));
+  tab.addEventListener("keydown",e=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(e.key))return;e.preventDefault();const tabs=[...document.querySelectorAll(".view-tab")];let index=tabs.indexOf(tab);if(e.key==="ArrowLeft")index=(index+tabs.length-1)%tabs.length;if(e.key==="ArrowRight")index=(index+1)%tabs.length;if(e.key==="Home")index=0;if(e.key==="End")index=tabs.length-1;tabs[index].focus();setView(tabs[index].dataset.view);});
+});
+document.getElementById("calendarPrev").innerHTML=ICONS.prev;
+document.getElementById("calendarNext").innerHTML=ICONS.next;
+document.getElementById("calendarPrev").addEventListener("click",()=>{if(state.calendarMonth>0){state.calendarMonth--;renderCalendar();}});
+document.getElementById("calendarNext").addEventListener("click",()=>{if(state.calendarMonth<11){state.calendarMonth++;renderCalendar();}});
 async function loadData(){
   const fallback=JSON.parse(document.getElementById("data").textContent);
   if(typeof location!=="undefined"&&location.protocol==="file:") return fallback;
@@ -463,12 +677,16 @@ async function loadData(){
 }
 async function init(){
   DATA=await loadData();
+  state.saved=readSaved();
   document.getElementById("gen").textContent=`Date actualizate la ${DATA.generated}.`;
   renderNextRace();
-  render();
+  renderSavedState();
+  const hash=typeof location!=="undefined"?location.hash:"";
+  setView(hash==="#calendar"?"calendar":hash==="#selectia-mea"?"selected":"races",{updateHash:false});
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 globalThis.__appReady=init();
+globalThis.__calendarTrail={state,eventKey,toggleSaved,setView,renderSelection};
 </script>
 </body>
 </html>

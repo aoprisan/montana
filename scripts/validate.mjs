@@ -56,6 +56,9 @@ for (const [name, calendar] of [["events.json", events], ["embedded fallback", e
     }
   }
 }
+if (JSON.stringify(events.events) !== JSON.stringify(embedded.events)) {
+  throw new Error("events.json and the embedded offline fallback have drifted");
+}
 if (!html.includes('rel="manifest" href="manifest.webmanifest"')) {
   throw new Error("index.html does not link the web app manifest");
 }
@@ -96,6 +99,10 @@ class FakeElement {
     this.innerHTML = "";
     this.textContent = "";
     this.value = "";
+    this.dataset = {};
+    this.hidden = false;
+    this.disabled = false;
+    this.tabIndex = 0;
   }
 
   addEventListener(type, listener) {
@@ -116,7 +123,7 @@ class FakeElement {
 }
 
 const elements = new Map(
-  ["list", "months", "q", "count", "showCancelled", "onlyUpcoming", "allTags", "nextRace", "gen", "data"].map(
+  ["list", "months", "q", "count", "showCancelled", "onlyUpcoming", "allTags", "nextRace", "gen", "data", "calendarGrid", "calendarTitle", "calendarPrev", "calendarNext", "selectionContent", "savedTabCount"].map(
     (id) => [id, new FakeElement(id)],
   ),
 );
@@ -132,7 +139,7 @@ const currentEvents = {
     { d: "2026-08-16", d2: "2026-08-17", name: "Past", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
     { d: "2026-08-16", d2: "2026-08-18", name: "Ongoing", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
     { d: "2026-08-18", name: "Today", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
-    { d: "2026-08-19", name: "Future", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
+    { d: "2026-08-19", name: "Future", url: "#", loc: "—", county: "—", dist: "10 / 20 km", tags: [] },
   ],
 };
 elements.get("showCancelled").setAttribute("aria-pressed", "true");
@@ -145,23 +152,34 @@ class FixedDate extends Date {
   }
 }
 
-await runInNewContext(appScript, {
+const storage = new Map();
+const context = {
   Date: FixedDate,
   fetch: async () => ({ ok: true, json: async () => currentEvents }),
   console,
+  history: { replaceState() {} },
+  location: { protocol: "https:", pathname: "/", search: "", hash: "" },
+  localStorage: {
+    getItem: (key) => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, value),
+  },
+  window: { scrollTo() {} },
   document: {
+    body: { dataset: {} },
     getElementById: (id) => elements.get(id),
     querySelectorAll: () => [],
   },
   navigator: {},
-});
+};
+await runInNewContext(appScript, context);
+await context.__appReady;
 
 if (elements.get("list").innerHTML.includes("Stale fallback")) {
   throw new Error("application ignored the current events.json response");
 }
 
 if (!elements.get("count").innerHTML.startsWith("3 curse")) {
-  throw new Error("upcoming-only default returned the wrong event count");
+  throw new Error(`upcoming-only default returned the wrong event count: ${elements.get("count").innerHTML}`);
 }
 if (elements.get("onlyUpcoming").getAttribute("aria-pressed") !== "true") {
   throw new Error("upcoming-only filter is not selected by default");
@@ -181,4 +199,19 @@ if (!elements.get("list").innerHTML.includes("Past")) {
   throw new Error("disabling upcoming-only did not restore past events");
 }
 
-console.log(`Static PWA is valid (${events.events.length} events; upcoming-only default and toggle passed).`);
+if (!html.includes('role="tab"') || !html.includes('id="panel-calendar"') || !html.includes('id="panel-selected"')) {
+  throw new Error("three-view navigation is missing");
+}
+if (elements.get("list").innerHTML.includes("Preț") || elements.get("list").innerHTML.includes("RON")) {
+  throw new Error("disabled pricing is still visible in the race list");
+}
+
+context.__calendarTrail.toggleSaved(currentEvents.events[3]);
+if (!elements.get("selectionContent").innerHTML.includes("Curse selectate") || !elements.get("selectionContent").innerHTML.includes("10 / 20 km")) {
+  throw new Error("saving a race did not update the simplified selection");
+}
+if (elements.get("selectionContent").innerHTML.includes("Preț") || elements.get("selectionContent").innerHTML.includes("RON")) {
+  throw new Error("disabled pricing is still visible in the selection");
+}
+
+console.log(`Static PWA is valid (${events.events.length} events; tabs, saved races, and filters passed).`);

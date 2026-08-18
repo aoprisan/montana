@@ -5,6 +5,9 @@
 Static PWA: calendarul curselor de alergare montană / trail / sky / vertical din România în 2026,
 cu link către pagina oficială a fiecărei curse. Peste 100 de evenimente, ianuarie–decembrie.
 
+Aplicația are trei vizualizări: lista cronologică, calendarul lunar și selecția personală. Cursele
+salvate sunt păstrate local în browser.
+
 ## Structură
 - `app/` — tot ce trebuie publicat (GitHub Pages ready)
   - `index.html` — aplicația și o copie embedded folosită doar ca fallback offline
