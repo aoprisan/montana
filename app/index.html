@@ -144,6 +144,7 @@ footer a{color:var(--ink)}
     <button class="chip" data-tag="vertical" aria-pressed="false">Vertical</button>
     <button class="chip" data-tag="iarnă" aria-pressed="false">Iarnă</button>
     <button class="chip" data-tag="noapte" aria-pressed="false">Noapte</button>
+    <button class="chip" id="onlyUpcoming" aria-pressed="false">Doar viitoare</button>
     <button class="chip" id="showCancelled" aria-pressed="true">Arată anulate</button>
     <span class="count" id="count"></span>
   </div>
@@ -299,7 +300,9 @@ const MARCAJE=[
   '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><circle cx="13" cy="13" r="8" fill="#ce2b26"/></svg>'
 ];
 let DATA={events:[]};
-const state={q:"",tags:new Set(),showCancelled:true};
+const state={q:"",tags:new Set(),onlyUpcoming:false,showCancelled:true};
+const now=new Date();
+const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 
 const fmt=d=>{const [y,m,day]=d.split("-");return {m:+m-1,day:+day};};
 function rangeLabel(e){
@@ -309,6 +312,7 @@ function rangeLabel(e){
   return (a.m===b.m)?`${a.day}–${b.day} ${MON_SHORT[a.m]}`:`${a.day} ${MON_SHORT[a.m]} – ${b.day} ${MON_SHORT[b.m]}`;
 }
 function matches(e){
+  if(state.onlyUpcoming && (e.d2||e.d)<today) return false;
   if(!state.showCancelled && e.status==="anulat") return false;
   if(state.tags.size && ![...state.tags].every(t=>(e.tags||[]).includes(t))) return false;
   if(state.q){
@@ -380,6 +384,10 @@ document.querySelectorAll(".chip[data-tag]").forEach(b=>b.addEventListener("clic
 document.getElementById("showCancelled").addEventListener("click",e=>{
   state.showCancelled=!state.showCancelled;
   e.currentTarget.setAttribute("aria-pressed",String(state.showCancelled));render();
+});
+document.getElementById("onlyUpcoming").addEventListener("click",e=>{
+  state.onlyUpcoming=!state.onlyUpcoming;
+  e.currentTarget.setAttribute("aria-pressed",String(state.onlyUpcoming));render();
 });
 DATA=JSON.parse(document.getElementById("data").textContent);
 document.getElementById("gen").textContent=`Ultima actualizare a datelor: ${DATA.generated}.`;
