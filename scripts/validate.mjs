@@ -105,7 +105,7 @@ class FakeElement {
 }
 
 const elements = new Map(
-  ["list", "ridge", "q", "count", "showCancelled", "onlyUpcoming", "gen", "data"].map(
+  ["list", "months", "q", "count", "showCancelled", "onlyUpcoming", "allTags", "nextRace", "gen", "data"].map(
     (id) => [id, new FakeElement(id)],
   ),
 );
@@ -119,7 +119,8 @@ elements.get("data").textContent = JSON.stringify({
   ],
 });
 elements.get("showCancelled").setAttribute("aria-pressed", "true");
-elements.get("onlyUpcoming").setAttribute("aria-pressed", "false");
+elements.get("onlyUpcoming").setAttribute("aria-pressed", "true");
+elements.get("allTags").setAttribute("aria-pressed", "true");
 
 class FixedDate extends Date {
   constructor(...args) {
@@ -136,15 +137,25 @@ runInNewContext(appScript, {
   navigator: {},
 });
 
-listeners.get("onlyUpcoming:click")({ currentTarget: elements.get("onlyUpcoming") });
-if (elements.get("count").textContent !== "3 / 4") {
-  throw new Error("upcoming-only toggle returned the wrong event count");
+if (!elements.get("count").innerHTML.startsWith("3 curse")) {
+  throw new Error("upcoming-only default returned the wrong event count");
 }
 if (elements.get("onlyUpcoming").getAttribute("aria-pressed") !== "true") {
-  throw new Error("upcoming-only toggle did not expose its pressed state");
+  throw new Error("upcoming-only filter is not selected by default");
 }
 if (elements.get("list").innerHTML.includes("Past") || !elements.get("list").innerHTML.includes("Ongoing")) {
-  throw new Error("upcoming-only toggle mishandled past or ongoing events");
+  throw new Error("upcoming-only default mishandled past or ongoing events");
 }
 
-console.log(`Static PWA is valid (${events.events.length} events; upcoming-only toggle passed).`);
+listeners.get("onlyUpcoming:click")({ currentTarget: elements.get("onlyUpcoming") });
+if (!elements.get("count").innerHTML.startsWith("4 curse")) {
+  throw new Error("disabling upcoming-only returned the wrong event count");
+}
+if (elements.get("onlyUpcoming").getAttribute("aria-pressed") !== "false") {
+  throw new Error("upcoming-only toggle did not expose its disabled state");
+}
+if (!elements.get("list").innerHTML.includes("Past")) {
+  throw new Error("disabling upcoming-only did not restore past events");
+}
+
+console.log(`Static PWA is valid (${events.events.length} events; upcoming-only default and toggle passed).`);

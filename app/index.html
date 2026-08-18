@@ -11,17 +11,21 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#e9edde;        /* hârtie de hartă topo */
-  --card:#f6f8ee;
-  --ink:#1f2a1d;          /* molid întunecat */
-  --ink-soft:#4c5a45;
-  --contour:#c8c1a4;      /* curbe de nivel */
-  --blaze:#ce2b26;        /* marcaj roșu */
-  --blaze-b:#1e5fa8;      /* marcaj albastru */
-  --blaze-y:#dfa400;      /* marcaj galben */
+  --forest:#072d23;
+  --forest-2:#0a382b;
+  --paper:#f4f3ee;
+  --paper-2:#ebece6;
+  --ink:#092a21;
+  --ink-soft:#66716c;
+  --line:#b9c0ba;
+  --line-dark:#365147;
+  --orange:#ef4d18;
+  --blue:#285ea8;
+  --yellow:#b98b10;
+  --white:#fbfcf8;
   --disp:"Big Shoulders Display","Arial Narrow",system-ui,sans-serif;
   --body:"Inter",system-ui,-apple-system,sans-serif;
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,monospace;
@@ -32,131 +36,171 @@ html{scroll-behavior:smooth}
 body{
   margin:0;background:var(--paper);color:var(--ink);
   font-family:var(--body);font-size:15px;line-height:1.45;
-  background-image:
-    repeating-radial-gradient(ellipse 900px 420px at 18% -8%, transparent 0 46px, rgba(120,110,70,.09) 46px 47px),
-    repeating-radial-gradient(ellipse 1100px 520px at 92% 112%, transparent 0 58px, rgba(120,110,70,.07) 58px 59px);
 }
 a{color:inherit}
-.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+button,input{font:inherit}
+button{color:inherit}
+.wrap{width:min(100% - 64px,1360px);margin-inline:auto}
+.icon{width:20px;height:20px;display:block;flex:0 0 auto}
 
-header.site{padding:28px 0 10px;border-bottom:2px solid var(--ink)}
-.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
-h1{
-  font-family:var(--disp);font-weight:800;letter-spacing:.01em;
-  font-size:clamp(44px,9vw,84px);line-height:.92;margin:6px 0 4px;text-transform:uppercase;
+header.site{
+  min-height:344px;color:var(--white);position:relative;overflow:hidden;
+  background-color:var(--forest);
+  background-image:
+    repeating-radial-gradient(ellipse 520px 210px at 10% 18%,transparent 0 27px,rgba(223,176,80,.10) 28px 29px),
+    repeating-radial-gradient(ellipse 700px 290px at 88% 72%,transparent 0 34px,rgba(223,176,80,.08) 35px 36px);
 }
-h1 .yr{color:var(--blaze)}
-.sub{margin:0 0 14px;color:var(--ink-soft);max-width:56ch}
+header.site::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.08),transparent 45%,rgba(0,0,0,.05));pointer-events:none}
+.header-inner{position:relative;z-index:1;padding:28px 0 34px}
+.brand{display:flex;align-items:center;gap:16px;font:700 clamp(25px,2.5vw,38px)/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
+.blaze-mark{display:grid;grid-template-columns:repeat(3,1fr);width:51px;height:51px;border:1px solid rgba(255,255,255,.72);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.blaze-mark i:nth-child(1){background:#e62226}.blaze-mark i:nth-child(2){background:#fff}.blaze-mark i:nth-child(3){background:#183f86}
+.hero{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(370px,.85fr);gap:72px;align-items:end;margin-top:36px}
+.hero-copy h1{font:800 clamp(56px,6vw,94px)/.86 var(--disp);letter-spacing:.005em;text-transform:uppercase;margin:0;max-width:860px}
+.hero-copy p{font-size:clamp(16px,1.35vw,22px);line-height:1.5;margin:22px 0 0;max-width:690px;color:#dde5df}
+.next-race{border-left:1px solid rgba(255,255,255,.75);padding:6px 0 3px 54px;min-height:190px}
+.next-label{font:600 15px/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;color:#acbab4;margin-bottom:16px}
+.next-race h2{font:700 clamp(25px,2.25vw,38px)/1 var(--disp);text-transform:uppercase;margin:0 0 14px;color:var(--orange)}
+.next-meta{display:grid;gap:9px;color:#e9eee9;font-size:14px;font-weight:500;text-transform:uppercase}
+.next-meta span{display:flex;align-items:center;gap:10px}
+.next-link{display:inline-flex;align-items:center;gap:8px;margin-top:16px;color:var(--orange);font:700 16px var(--disp);letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+.next-link:hover{text-decoration:underline;text-underline-offset:4px}
 
-/* creastă navigabilă */
-.ridge{display:block;width:100%;height:88px;margin:6px 0 0}
-.ridge .col{cursor:pointer}
-.ridge .col:hover .bar, .ridge .col:focus .bar{fill:var(--blaze)}
-.ridge text{font-family:var(--mono);font-size:9.5px;fill:var(--ink-soft);text-anchor:middle}
-.ridge .bar{fill:var(--ink);transition:fill .15s}
-.ridge polyline{fill:none;stroke:var(--blaze);stroke-width:2}
+.filters{position:sticky;top:0;z-index:20;background:rgba(244,243,238,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.filter-row{min-height:106px;display:flex;align-items:center;gap:12px}
+.searchbox{width:min(330px,26vw);height:54px;display:flex;align-items:center;gap:13px;border:1px solid var(--ink);padding:0 16px;background:var(--white)}
+.searchbox:focus-within{outline:3px solid color-mix(in srgb,var(--orange) 28%,transparent);border-color:var(--orange)}
+input[type=search]{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:14px}
+input[type=search]::placeholder{color:#78827d}
+.chip{height:48px;border:1px solid #6e7772;background:transparent;border-radius:0;padding:0 17px;font:700 15px var(--disp);text-transform:uppercase;cursor:pointer;transition:.16s ease}
+.chip:hover{border-color:var(--ink);transform:translateY(-1px)}
+.chip[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--white)}
+.chip:focus-visible,.toggle:focus-visible,.month-btn:focus-visible{outline:3px solid color-mix(in srgb,var(--orange) 36%,transparent);outline-offset:2px}
+.toggles{display:flex;align-items:center;gap:24px;margin-left:auto}
+.toggle{display:flex;align-items:center;gap:11px;border:0;background:none;padding:10px 0;white-space:nowrap;cursor:pointer;font-size:13px}
+.switch{width:48px;height:25px;border:1px solid var(--ink);background:transparent;border-radius:99px;position:relative;transition:.18s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:var(--ink);transition:.18s}
+.toggle[aria-pressed=true] .switch{background:var(--forest)}
+.toggle[aria-pressed=true] .switch::after{transform:translateX(23px);background:var(--white)}
 
-/* filtre */
-.filters{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--contour)}
-.filters .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-input[type=search]{
-  flex:1;min-width:160px;border:1.5px solid var(--ink);background:var(--card);
-  padding:8px 12px;font:inherit;border-radius:2px;color:var(--ink)
-}
-input[type=search]:focus{outline:2px solid var(--blaze);outline-offset:1px}
-.chip{
-  border:1.5px solid var(--ink);background:var(--card);border-radius:2px;
-  padding:6px 10px;font:600 12px var(--body);cursor:pointer;letter-spacing:.02em
-}
-.chip[aria-pressed=true]{background:var(--ink);color:var(--card)}
-.chip:focus-visible{outline:2px solid var(--blaze);outline-offset:1px}
-.count{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-left:auto}
+.month-rail{border-bottom:1px solid var(--line);background:var(--paper)}
+.month-rail-inner{min-height:132px;display:grid;grid-template-columns:140px 1fr;align-items:center;gap:22px}
+.count{font:700 28px var(--disp);text-transform:uppercase;letter-spacing:.02em}
+.count small{display:block;margin-top:4px;font:500 10px var(--mono);color:var(--ink-soft);letter-spacing:.05em}
+.months{display:grid;grid-template-columns:repeat(12,minmax(54px,1fr));align-self:stretch}
+.month-btn{position:relative;border:0;background:transparent;padding:28px 4px 20px;cursor:pointer;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;font:700 16px var(--disp);text-transform:uppercase}
+.month-btn:disabled{cursor:default;opacity:.34}
+.month-btn:not(:disabled):hover{color:var(--orange)}
+.month-btn.is-current{color:var(--ink)}
+.month-btn.is-current::after{content:"";position:absolute;bottom:15px;width:34px;height:3px;background:var(--orange)}
+.density{height:28px;display:flex;gap:2px;align-items:flex-end}
+.density i{display:block;width:4px;background:currentColor;min-height:3px}
+.month-num{font:500 11px var(--mono);margin-top:5px}
 
-/* luni */
-.month{margin-top:26px}
-.month>h2{
-  display:flex;align-items:center;gap:10px;margin:0 0 2px;
-  font-family:var(--disp);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.03em
-}
-.month>h2 .mk{flex:0 0 auto}
-.month>h2 .rule{flex:1;height:0;border-top:1.5px solid var(--ink)}
-.month>h2 .n{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--ink-soft)}
-
-/* eveniment */
-.ev{
-  display:grid;grid-template-columns:64px 1fr;gap:0 14px;
-  background:var(--card);border:1px solid var(--contour);border-left:4px solid var(--ink);
-  margin:10px 0;padding:10px 12px;border-radius:2px;position:relative
-}
-.ev.cancelled{border-left-color:var(--blaze)}
-.date{font-family:var(--mono);text-align:center;padding-top:2px}
-.date .dd{display:block;font-size:24px;font-weight:600;line-height:1}
-.date .rng{display:block;font-size:10.5px;color:var(--ink-soft);margin-top:3px}
-.ev h3{margin:0;font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:.01em;line-height:1.05}
+main{padding-top:12px;padding-bottom:50px}
+.month{scroll-margin-top:120px;margin-top:34px}
+.month-head{display:flex;align-items:baseline;gap:28px;padding:0 10px 8px;border-bottom:1px solid var(--ink)}
+.month-head h2{font:800 50px/1 var(--disp);text-transform:uppercase;margin:0;letter-spacing:.02em}
+.month-head .n{font:700 15px var(--disp);color:var(--orange);text-transform:uppercase;letter-spacing:.05em}
+.ev{display:grid;grid-template-columns:130px minmax(250px,1.35fr) minmax(220px,.9fr) minmax(210px,.9fr) minmax(110px,.45fr) 42px;align-items:center;min-height:78px;padding:12px 10px;border-bottom:1px solid var(--line);transition:background .16s,color .16s;position:relative}
+.ev:hover{background:var(--paper-2)}
+.ev.cancelled{color:#77817c}
+.date{display:flex;align-items:baseline;gap:14px;font-family:var(--disp);text-transform:uppercase}
+.date .dd{font-size:33px;font-weight:800;line-height:1}
+.date .rng{font-size:14px;font-weight:600;color:var(--ink-soft)}
+.ev h3{margin:0;font:700 21px/1.15 var(--disp);letter-spacing:.005em}
 .ev h3 a{text-decoration:none}
-.ev h3 a:hover,.ev h3 a:focus{color:var(--blaze);text-decoration:underline;text-underline-offset:3px}
-.ev .meta{margin-top:3px;font-size:13px;color:var(--ink-soft)}
-.ev .meta .cty{font-family:var(--mono);font-size:11px;border:1px solid var(--contour);padding:0 4px;border-radius:2px;margin-left:4px}
-.ev .dist{margin-top:5px;font-family:var(--mono);font-size:12.5px}
-.ev .tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
-.tag{font:600 10.5px var(--body);text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:2px;border:1px solid var(--ink);color:var(--ink)}
-.tag.t-ultra{border-color:var(--blaze);color:var(--blaze)}
-.tag.t-sky,.tag.t-vertical{border-color:var(--blaze-b);color:var(--blaze-b)}
+.ev h3 a::after{content:"";position:absolute;inset:0;z-index:1}
+.ev:hover h3 a{color:var(--orange)}
+.meta,.dist{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-size:13px;padding-right:16px}
+.meta .icon,.dist .icon{width:18px;height:18px;color:var(--ink)}
+.cty{font:500 11px var(--mono)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font:700 10px var(--body);text-transform:uppercase;letter-spacing:.04em;padding:3px 7px;border:1px solid var(--ink);color:var(--ink)}
+.tag.t-ultra{border-color:var(--orange);color:var(--orange)}
+.tag.t-sky,.tag.t-vertical{border-color:var(--blue);color:var(--blue)}
 .tag.t-iarnă,.tag.t-noapte{border-color:var(--ink-soft);color:var(--ink-soft)}
-.tag.t-campionat{border-color:var(--blaze-y);color:#8a6800}
-.note{margin-top:5px;font-size:12px;color:#8a6800}
-.stamp{
-  position:absolute;top:8px;right:10px;transform:rotate(-6deg);
-  font:800 13px var(--disp);letter-spacing:.14em;color:var(--blaze);
-  border:2px solid var(--blaze);padding:1px 7px;border-radius:2px;text-transform:uppercase
-}
-.ev.cancelled h3, .ev.cancelled .dist{text-decoration:line-through;text-decoration-color:rgba(206,43,38,.55)}
-.ev .out{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-decoration:none}
-.ev .out:hover{color:var(--blaze)}
+.tag.t-campionat{border-color:var(--yellow);color:#806000}
+.status{font:700 11px var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--orange)}
+.ev.cancelled h3,.ev.cancelled .dist{text-decoration:line-through;text-decoration-color:var(--orange)}
+.note{grid-column:2/6;font-size:11px;color:#856814;margin-top:3px}
+.out{display:flex;justify-content:flex-end;color:var(--ink);text-decoration:none;position:relative;z-index:2}
+.out .icon{transition:transform .16s}
+.ev:hover .out .icon{transform:translate(3px,-3px);color:var(--orange)}
+.empty{margin:70px 0;text-align:center;color:var(--ink-soft);font-size:16px}
+.empty strong{display:block;font:700 34px var(--disp);color:var(--ink);margin-bottom:8px;text-transform:uppercase}
 
-.empty{margin:40px 0;text-align:center;color:var(--ink-soft)}
-footer{margin:48px 0 32px;padding-top:14px;border-top:2px solid var(--ink);font-size:12.5px;color:var(--ink-soft)}
-footer a{color:var(--ink)}
-@media (max-width:520px){
-  .ev{grid-template-columns:52px 1fr;padding:10px}
-  .date .dd{font-size:20px}
-  .stamp{position:static;display:inline-block;margin-top:6px;transform:none}
-  .ev .out{position:static;display:inline-block;margin-top:6px}
+footer{background:var(--forest);color:#b7c2bd;padding:26px 0;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.footer-inner{display:flex;justify-content:space-between;gap:30px}
+footer p{margin:0}footer a{color:var(--white);text-underline-offset:3px}
+
+@media (max-width:1080px){
+  .wrap{width:min(100% - 40px,1360px)}
+  .hero{grid-template-columns:1fr 340px;gap:40px}.next-race{padding-left:34px}
+  .filter-row{flex-wrap:wrap;padding:16px 0}.searchbox{width:100%}.toggles{margin-left:0}.filters{position:relative}
+  .ev{grid-template-columns:105px minmax(230px,1.2fr) minmax(190px,.85fr) minmax(180px,.8fr) 42px}.tags{grid-column:2/5;margin-top:6px}.note{grid-column:2/5}.out{grid-column:5;grid-row:1/3}
 }
+@media (max-width:760px){
+  .wrap{width:min(100% - 28px,1360px)}
+  header.site{min-height:0}.header-inner{padding:20px 0 28px}.blaze-mark{width:40px;height:40px}.brand{gap:12px}
+  .hero{display:block;margin-top:38px}.hero-copy h1{font-size:clamp(51px,16vw,78px)}.hero-copy p{font-size:15px;margin-top:16px}
+  .next-race{margin-top:32px;border-left:0;border-top:1px solid rgba(255,255,255,.6);padding:23px 0 0;min-height:0}.next-race h2{font-size:28px}.next-meta{grid-template-columns:1fr 1fr;font-size:12px}
+  .filter-row{display:grid;grid-template-columns:1fr;gap:12px}.searchbox{width:100%}.filter-chips{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px;scrollbar-width:none}.filter-chips::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;height:44px}.toggles{justify-content:space-between;gap:10px}
+  .month-rail-inner{display:block;padding:17px 0 0}.count{font-size:24px}.months{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:0 14px;scrollbar-width:none}.months::-webkit-scrollbar{display:none}.month-btn{min-width:68px;height:95px;padding:12px 4px 20px;scroll-snap-align:start}.month-btn.is-current::after{bottom:12px}
+  main{padding-top:2px}.month{margin-top:30px}.month-head{padding:0 0 8px;gap:16px}.month-head h2{font-size:39px}.month-head .n{font-size:13px}
+  .ev{grid-template-columns:68px 1fr 32px;align-items:start;min-height:0;padding:18px 0;gap:0 10px}.date{display:block}.date .dd{display:block;font-size:29px}.date .rng{font-size:12px}.ev h3{font-size:21px;padding-right:6px}.meta,.dist{grid-column:2;gap:7px;margin-top:8px;padding:0}.tags{grid-column:2;grid-row:auto;margin-top:10px}.note{grid-column:2/4;margin-top:8px}.out{grid-column:3;grid-row:1/4}.status{grid-column:2;margin-top:8px}.footer-inner{display:block}.footer-inner p+p{margin-top:10px}
+}
+@media (max-width:420px){.next-meta{grid-template-columns:1fr}.toggles{align-items:flex-start;flex-direction:column}.toggle{width:100%;justify-content:space-between}.hero-copy h1{font-size:50px}}
 </style>
 </head>
 <body>
 <header class="site">
-  <div class="wrap">
-    <div class="kicker">alergare montană · trail · sky · vertical — românia</div>
-    <h1>Munte <span class="yr">2026</span></h1>
-    <p class="sub">Toate cursele de alergare montană și trail din România în 2026, într-un singur loc.
-    Doar informații + link către pagina fiecărei curse. Apasă pe o lună din creastă ca să sari la ea.</p>
-    <svg class="ridge" id="ridge" viewBox="0 0 880 88" preserveAspectRatio="none" role="navigation" aria-label="Navigare pe luni"></svg>
+  <div class="wrap header-inner">
+    <div class="brand"><span class="blaze-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Munte / 2026</span></div>
+    <div class="hero">
+      <div class="hero-copy">
+        <h1>Cursele care urmează.</h1>
+        <p>Calendarul curselor de alergare montană și trail din România. Date, distanțe și linkuri oficiale — fără zgomot.</p>
+      </div>
+      <aside class="next-race" id="nextRace" aria-label="Următoarea cursă"></aside>
+    </div>
   </div>
 </header>
 
 <div class="filters">
-  <div class="wrap row">
-    <input type="search" id="q" placeholder="Caută cursă, loc, județ…" aria-label="Caută">
-    <button class="chip" data-tag="ultra" aria-pressed="false">Ultra</button>
-    <button class="chip" data-tag="sky" aria-pressed="false">Sky</button>
-    <button class="chip" data-tag="vertical" aria-pressed="false">Vertical</button>
-    <button class="chip" data-tag="iarnă" aria-pressed="false">Iarnă</button>
-    <button class="chip" data-tag="noapte" aria-pressed="false">Noapte</button>
-    <button class="chip" id="onlyUpcoming" aria-pressed="false">Doar viitoare</button>
-    <button class="chip" id="showCancelled" aria-pressed="true">Arată anulate</button>
-    <span class="count" id="count"></span>
+  <div class="wrap filter-row">
+    <label class="searchbox">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16.2 16.2 4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+      <input type="search" id="q" placeholder="Caută cursă sau loc" aria-label="Caută cursă sau loc">
+    </label>
+    <div class="filter-chips" aria-label="Filtre după tipul cursei">
+      <button class="chip" id="allTags" aria-pressed="true">Toate</button>
+      <button class="chip" data-tag="ultra" aria-pressed="false">Ultra</button>
+      <button class="chip" data-tag="sky" aria-pressed="false">Sky</button>
+      <button class="chip" data-tag="vertical" aria-pressed="false">Vertical</button>
+      <button class="chip" data-tag="iarnă" aria-pressed="false">Iarnă</button>
+      <button class="chip" data-tag="noapte" aria-pressed="false">Noapte</button>
+    </div>
+    <div class="toggles">
+      <button class="toggle" id="onlyUpcoming" aria-pressed="true"><span>Doar viitoare</span><span class="switch" aria-hidden="true"></span></button>
+      <button class="toggle" id="showCancelled" aria-pressed="true"><span>Arată anulate</span><span class="switch" aria-hidden="true"></span></button>
+    </div>
   </div>
 </div>
+
+<nav class="month-rail" aria-label="Navigare pe luni">
+  <div class="wrap month-rail-inner">
+    <div class="count" id="count"></div>
+    <div class="months" id="months"></div>
+  </div>
+</nav>
 
 <main class="wrap" id="list" aria-live="polite"></main>
 
 <footer>
-  <div class="wrap">
-    <p>Date compilate din <a href="https://vladcarbune.ro/calendar-evenimente-alergare-2026/" rel="noopener">calendarul comunitar Vlad Cărbune</a>,
-    <a href="https://www.fra.ro/competitii/calendar" rel="noopener">FRA</a> și <a href="https://runmap.ro" rel="noopener">RunMap</a>.
-    Datele și distanțele se pot schimba — verifică întotdeauna pagina oficială a cursei. <span id="gen"></span></p>
+  <div class="wrap footer-inner">
+    <p>Surse: <a href="https://vladcarbune.ro/calendar-evenimente-alergare-2026/" rel="noopener">Vlad Cărbune</a>, <a href="https://www.fra.ro/competitii/calendar" rel="noopener">FRA</a> și <a href="https://runmap.ro" rel="noopener">RunMap</a>. Verifică pagina oficială înainte de cursă.</p>
+    <p id="gen"></p>
   </div>
 </footer>
 
@@ -292,17 +336,17 @@ footer a{color:var(--ink)}
 <script>
 const MONTHS=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
 const MON_SHORT=["IAN","FEB","MAR","APR","MAI","IUN","IUL","AUG","SEP","OCT","NOI","DEC"];
-/* marcaje turistice românești, rotite pe luni */
-const MARCAJE=[
-  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><rect x="9" y="2" width="8" height="22" fill="#ce2b26"/></svg>',
-  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><rect x="10" y="3" width="6" height="20" fill="#1e5fa8"/><rect x="3" y="10" width="20" height="6" fill="#1e5fa8"/></svg>',
-  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><polygon points="13,4 23,22 3,22" fill="#dfa400"/></svg>',
-  '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" fill="#fff" stroke="#1f2a1d"/><circle cx="13" cy="13" r="8" fill="#ce2b26"/></svg>'
-];
 let DATA={events:[]};
-const state={q:"",tags:new Set(),onlyUpcoming:false,showCancelled:true};
+const state={q:"",tags:new Set(),onlyUpcoming:true,showCancelled:true};
 const now=new Date();
 const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+
+const ICONS={
+  location:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/></svg>',
+  mountain:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m2.5 19 6.2-10 3.1 4.7L15.7 7l5.8 12h-19Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter"/><path d="m7.1 11.6 1.7 1.2 1.4-1.1m4.2-2.3 1.6 1.4 1.5-1" stroke="currentColor" stroke-width="1.4"/></svg>',
+  calendar:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4.5h14a2 2 0 0 1 2 2V20H3V6.5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.7"/><path d="M7 2v5M17 2v5M3 9h18" stroke="currentColor" stroke-width="1.7"/></svg>',
+  out:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>'
+};
 
 const fmt=d=>{const [y,m,day]=d.split("-");return {m:+m-1,day:+day};};
 function rangeLabel(e){
@@ -321,7 +365,24 @@ function matches(e){
   }
   return true;
 }
-function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function dateLong(e){
+  return new Intl.DateTimeFormat("ro-RO",{day:"2-digit",month:"short",year:"numeric",weekday:"long"})
+    .format(new Date(`${e.d}T12:00:00`)).replace(".","");
+}
+function renderNextRace(){
+  const next=DATA.events.filter(e=>(e.d2||e.d)>=today&&e.status!=="anulat").sort((a,b)=>a.d.localeCompare(b.d))[0];
+  const el=document.getElementById("nextRace");
+  if(!next){el.hidden=true;return;}
+  el.innerHTML=`<div class="next-label">Următoarea cursă</div>
+    <h2>${esc(next.name)}</h2>
+    <div class="next-meta">
+      <span>${ICONS.calendar}${esc(dateLong(next))}</span>
+      <span>${ICONS.location}${esc(next.loc)}, ${esc(next.county)}</span>
+      <span>${ICONS.mountain}${esc(next.dist||"Distanțe pe site")}</span>
+    </div>
+    <a class="next-link" href="${esc(next.url)}" target="_blank" rel="noopener">Vezi detalii oficiale ${ICONS.out}</a>`;
+}
 function render(){
   const list=document.getElementById("list");
   const evs=DATA.events.filter(matches).sort((a,b)=>a.d.localeCompare(b.d));
@@ -329,58 +390,54 @@ function render(){
   evs.forEach(e=>{const m=fmt(e.d).m;(byM.get(m)||byM.set(m,[]).get(m)).push(e);});
   let html="";
   for(const [m,items] of [...byM.entries()].sort((a,b)=>a[0]-b[0])){
-    html+=`<section class="month" id="m${m}"><h2><span class="mk">${MARCAJE[m%4]}</span>${MONTHS[m]}<span class="rule"></span><span class="n">${items.length} curse</span></h2>`;
+    html+=`<section class="month" id="m${m}"><header class="month-head"><h2>${MONTHS[m]}</h2><span class="n">${items.length} ${items.length===1?"cursă":"curse"}</span></header>`;
     for(const e of items){
       const a=fmt(e.d), rng=rangeLabel(e), canc=e.status==="anulat";
       html+=`<article class="ev${canc?" cancelled":""}">
         <div class="date"><span class="dd">${String(a.day).padStart(2,"0")}</span><span class="rng">${rng?esc(rng):MON_SHORT[a.m]}</span></div>
-        <div>
-          <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)}</a></h3>
-          <div class="meta">${esc(e.loc)}<span class="cty">${esc(e.county)}</span></div>
-          ${e.dist?`<div class="dist">${esc(e.dist)}</div>`:""}
-          ${(e.tags&&e.tags.length)?`<div class="tags">${e.tags.map(t=>`<span class="tag t-${esc(t)}">${esc(t)}</span>`).join("")}</div>`:""}
-          ${e.note?`<div class="note">⚠ ${esc(e.note)}</div>`:""}
-          ${canc?`<span class="stamp">Anulat</span>`:""}
-          <a class="out" href="${esc(e.url)}" target="_blank" rel="noopener">pagina cursei ↗</a>
-        </div>
+        <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)}</a></h3>
+        <div class="meta">${ICONS.location}<span>${esc(e.loc)}, <span class="cty">${esc(e.county)}</span></span></div>
+        ${e.dist?`<div class="dist">${ICONS.mountain}<span>${esc(e.dist)}</span></div>`:`<div></div>`}
+        ${canc?`<span class="status">Anulat</span>`:(e.tags&&e.tags.length)?`<div class="tags">${e.tags.map(t=>`<span class="tag t-${esc(t)}">${esc(t)}</span>`).join("")}</div>`:`<div></div>`}
+        <a class="out" href="${esc(e.url)}" target="_blank" rel="noopener" aria-label="Pagina oficială: ${esc(e.name)}">${ICONS.out}</a>
+        ${e.note?`<div class="note">Atenție: ${esc(e.note)}</div>`:""}
       </article>`;
     }
     html+="</section>";
   }
-  list.innerHTML=html||`<p class="empty">Nicio cursă nu se potrivește filtrelor. Șterge căutarea sau dezactivează un filtru.</p>`;
+  list.innerHTML=html||`<p class="empty"><strong>Nicio cursă găsită</strong>Șterge căutarea sau dezactivează un filtru.</p>`;
   const tot=DATA.events.length;
-  document.getElementById("count").textContent=`${evs.length} / ${tot}`;
-  drawRidge();
+  document.getElementById("count").innerHTML=`${evs.length} ${evs.length===1?"cursă":"curse"}<small>din ${tot} în calendar</small>`;
+  drawMonths(evs);
 }
-function drawRidge(){
-  const svg=document.getElementById("ridge");
+function drawMonths(evs){
+  const nav=document.getElementById("months");
   const counts=Array.from({length:12},()=>0);
-  DATA.events.forEach(e=>counts[fmt(e.d).m]++);
-  const max=Math.max(...counts,1), W=880,H=88,base=H-16,colW=W/12;
-  let bars="",pts="";
-  counts.forEach((c,i)=>{
-    const h=Math.round((c/max)*(base-14));
-    const x=i*colW, y=base-h;
-    pts+=`${x+colW/2},${y} `;
-    bars+=`<g class="col" tabindex="0" role="link" aria-label="${MONTHS[i]}, ${c} curse" data-m="${i}">
-      <rect x="${x+4}" y="0" width="${colW-8}" height="${base}" fill="transparent"/>
-      <rect class="bar" x="${x+colW/2-8}" y="${y}" width="16" height="${h}"/>
-      <text x="${x+colW/2}" y="${H-3}">${MON_SHORT[i]}</text>
-    </g>`;
-  });
-  svg.innerHTML=`<line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#1f2a1d" stroke-width="1.5"/>`+bars+`<polyline points="${pts.trim()}"/>`;
-  svg.querySelectorAll(".col").forEach(g=>{
-    const go=()=>{const t=document.getElementById("m"+g.dataset.m);if(t)t.scrollIntoView({block:"start"});};
-    g.addEventListener("click",go);
-    g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go();}});
+  evs.forEach(e=>counts[fmt(e.d).m]++);
+  const max=Math.max(...counts,1);
+  nav.innerHTML=counts.map((c,i)=>{
+    const bars=Array.from({length:4},(_,j)=>`<i style="height:${c?Math.max(4,Math.round((c/max)*24)-(j%2)*4):3}px"></i>`).join("");
+    const current=i===now.getMonth();
+    return `<button class="month-btn${current?" is-current":""}" data-m="${i}" ${c?"":"disabled"} aria-label="${MONTHS[i]}, ${c} ${c===1?"cursă":"curse"}"><span class="density" aria-hidden="true">${bars}</span><span>${MON_SHORT[i]}</span><span class="month-num">${c}</span></button>`;
+  }).join("");
+  nav.querySelectorAll(".month-btn:not(:disabled)").forEach(button=>{
+    button.addEventListener("click",()=>document.getElementById("m"+button.dataset.m)?.scrollIntoView({block:"start"}));
   });
 }
 document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
 document.querySelectorAll(".chip[data-tag]").forEach(b=>b.addEventListener("click",()=>{
   const t=b.dataset.tag, on=b.getAttribute("aria-pressed")==="true";
   b.setAttribute("aria-pressed",String(!on));
-  on?state.tags.delete(t):state.tags.add(t);render();
+  on?state.tags.delete(t):state.tags.add(t);
+  document.getElementById("allTags").setAttribute("aria-pressed",String(state.tags.size===0));
+  render();
 }));
+document.getElementById("allTags").addEventListener("click",()=>{
+  state.tags.clear();
+  document.querySelectorAll(".chip[data-tag]").forEach(b=>b.setAttribute("aria-pressed","false"));
+  document.getElementById("allTags").setAttribute("aria-pressed","true");
+  render();
+});
 document.getElementById("showCancelled").addEventListener("click",e=>{
   state.showCancelled=!state.showCancelled;
   e.currentTarget.setAttribute("aria-pressed",String(state.showCancelled));render();
@@ -390,7 +447,8 @@ document.getElementById("onlyUpcoming").addEventListener("click",e=>{
   e.currentTarget.setAttribute("aria-pressed",String(state.onlyUpcoming));render();
 });
 DATA=JSON.parse(document.getElementById("data").textContent);
-document.getElementById("gen").textContent=`Ultima actualizare a datelor: ${DATA.generated}.`;
+document.getElementById("gen").textContent=`Date actualizate la ${DATA.generated}.`;
+renderNextRace();
 render();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
