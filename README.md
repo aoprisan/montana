@@ -2,11 +2,16 @@
 
 [Deschide aplicația](https://aoprisan.github.io/montana/)
 
-Static PWA: calendarul curselor de alergare montană / trail / sky / vertical din România în 2026,
-cu link către pagina oficială a fiecărei curse. Peste 100 de evenimente, ianuarie–decembrie.
+Static PWA: calendarul curselor de alergare montană / trail / sky / vertical din România în 2026
+și 2027, cu link către pagina oficială a fiecărei curse. Peste 100 de evenimente, ianuarie–decembrie.
 
 Aplicația are trei vizualizări: lista cronologică, calendarul lunar și selecția personală. Cursele
 salvate sunt păstrate local în browser.
+
+Sezonul se alege din selectorul de an, afișat doar când calendarul conține mai mult de un an.
+Lista și calendarul lunar urmează sezonul selectat — săgețile calendarului trec dintr-un an în
+altul — iar cursele salvate rămân vizibile împreună, indiferent de sezon. La deschidere este
+selectat primul sezon cu curse viitoare.
 
 ## Structură
 - `app/` — tot ce trebuie publicat (GitHub Pages ready)
@@ -36,6 +41,11 @@ Testele scraperului și o verificare live fără modificarea datelor:
 cargo test --locked --manifest-path scraper/Cargo.toml
 cargo run --locked --manifest-path scraper/Cargo.toml -- --dry-run
 ```
+
+Implicit sunt actualizate sezoanele 2026 și 2027, fiecare din pagina comunitară a anului
+respectiv. Un singur sezon se actualizează cu `--year 2027`; `--source` și `--fixture` cer un
+singur `--year`. Sezoanele acceptate sunt listate în `SUPPORTED_YEARS` (`scraper/src/lib.rs`)
+și în `supportedYears` (`scripts/validate.mjs`) — ambele trebuie extinse pentru un an nou.
 
 ## Deploy
 
@@ -70,5 +80,11 @@ journalctl -u montana-scraper.service -n 100 --no-pager
 Datele inițiale au fost compilate manual (aug 2026) din vladcarbune.ro, fra.ro și runmap.ro.
 Workerul actualizează intrările recunoscute și adaugă curse noi, dar păstrează intrările curate
 manual care nu mai apar în sursa principală. Înainte de scriere verifică schema, URL-urile,
-numărul de rezultate și abaterea față de calendarul existent. Scrierea este atomică, iar ultimele
+numărul de rezultate și abaterea față de calendarul existent.
+
+Fiecare sezon este actualizat separat: cursele celorlalți ani sunt păstrate neatinse, iar
+pragurile de siguranță se aplică doar sezonului scrapat. Un sezon pe care calendarul nu îl
+conține încă (2027, până la publicarea paginii sursă) este sărit cu un avertisment, ca restul
+sezoanelor să se actualizeze normal; dacă eșuează un sezon deja prezent în calendar, rularea
+se oprește fără să scrie nimic. Scrierea este atomică, iar ultimele
 12 versiuni sunt păstrate în `/opt/montana/backups`. La orice eroare rămâne publicat ultimul fișier valid.

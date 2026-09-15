@@ -1,5 +1,5 @@
 /* Calendar Trail — service worker: cache-first app shell (data is embedded in index.html) */
-const V = "calendar-trail-v3";
+const V = "calendar-trail-v4";
 const SHELL = ["./", "index.html", "events.json", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

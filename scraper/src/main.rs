@@ -1,19 +1,19 @@
 use std::fs;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Parser;
 use montana_scraper::{
-    DEFAULT_SOURCE, SafetyPolicy, fetch_html, merge_with_baseline, parse_events, read_calendar,
+    SUPPORTED_YEARS, SafetyPolicy, default_source, fetch_html, read_calendar, refresh_seasons,
     write_calendar_atomic,
 };
 
 #[derive(Debug, Parser)]
 #[command(about = "Safely refresh calendartrail.ro event data", version)]
 struct Args {
-    /// HTML source URL. HTTPS is required unless --fixture is used.
-    #[arg(long, default_value = DEFAULT_SOURCE)]
-    source: String,
+    /// HTML source URL for a single --year, HTTPS only. Defaults to each season's page.
+    #[arg(long)]
+    source: Option<String>,
 
     /// Parse a local HTML fixture instead of fetching the source.
     #[arg(long)]
@@ -27,9 +27,9 @@ struct Args {
     #[arg(long)]
     backup_dir: Option<PathBuf>,
 
-    /// Calendar year represented by the source page.
-    #[arg(long, default_value_t = 2026)]
-    year: i32,
+    /// Calendar seasons to refresh. Repeat the flag for more than one.
+    #[arg(long = "year", num_args = 1.., default_values_t = SUPPORTED_YEARS.to_vec())]
+    years: Vec<i32>,
 
     /// Refuse a source page yielding fewer events.
     #[arg(long, default_value_t = 50)]
@@ -65,38 +65,61 @@ fn main() {
 
 fn run() -> Result<()> {
     let args = Args::parse();
-    let baseline = read_calendar(&args.output)?;
-    let html = if let Some(fixture) = &args.fixture {
-        fs::read_to_string(fixture)
-            .with_context(|| format!("could not read fixture {}", fixture.display()))?
-    } else {
-        fetch_html(&args.source)?
-    };
-    let scraped = parse_events(&html, args.year)?;
+    let mut years = args.years.clone();
+    years.sort_unstable();
+    years.dedup();
+    ensure!(!years.is_empty(), "at least one --year is required");
+    ensure!(
+        args.source.is_none() || years.len() == 1,
+        "--source refreshes a single --year"
+    );
+    ensure!(
+        args.fixture.is_none() || years.len() == 1,
+        "--fixture refreshes a single --year"
+    );
+
     let policy = SafetyPolicy {
         minimum_scraped_events: args.minimum_events,
         minimum_match_percent: args.minimum_match_percent,
         maximum_growth_percent: args.maximum_growth_percent,
         force: args.force,
     };
-    let (calendar, report) = merge_with_baseline(scraped, &baseline, &args.source, &policy)?;
+    let baseline = read_calendar(&args.output)?;
+    let (calendar, summary) = refresh_seasons(&baseline, &years, &policy, |year| {
+        let source = args.source.clone().unwrap_or_else(|| default_source(year));
+        let html = if let Some(fixture) = &args.fixture {
+            fs::read_to_string(fixture)
+                .with_context(|| format!("could not read fixture {}", fixture.display()))?
+        } else {
+            fetch_html(&source)?
+        };
+        Ok((source, html))
+    })?;
 
-    eprintln!(
-        "scraped={}, matched={}, changed={}, added={}, retained={}, final={}",
-        report.scraped,
-        report.matched,
-        report.changed,
-        report.added,
-        report.retained,
-        calendar.events.len()
-    );
+    for (year, report) in &summary.refreshed {
+        eprintln!(
+            "{year}: scraped={}, matched={}, changed={}, added={}, retained={}, carried={}",
+            report.scraped,
+            report.matched,
+            report.changed,
+            report.added,
+            report.retained,
+            report.carried
+        );
+    }
+    for (year, reason) in &summary.skipped {
+        eprintln!("{year}: skipped, {reason}");
+    }
+    eprintln!("final={}", calendar.events.len());
+
     if args.dry_run {
         if args.print_json {
             println!("{}", serde_json::to_string_pretty(&calendar)?);
         } else {
             println!(
-                "validated candidate with {} events; no files changed",
-                calendar.events.len()
+                "validated candidate with {} events across {} season(s); no files changed",
+                calendar.events.len(),
+                summary.refreshed.len()
             );
         }
     } else {
