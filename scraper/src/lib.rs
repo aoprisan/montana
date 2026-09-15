@@ -14,7 +14,21 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use url::Url;
 
-pub const DEFAULT_SOURCE: &str = "https://vladcarbune.ro/calendar-evenimente-alergare-2026/";
+/// Seasons the calendar publishes, oldest first.
+pub const SUPPORTED_YEARS: &[i32] = &[2026, 2027];
+const SOURCE_TEMPLATE: &str = "https://vladcarbune.ro/calendar-evenimente-alergare-{year}/";
+
+/// Community calendar page for a season.
+pub fn default_source(year: i32) -> String {
+    SOURCE_TEMPLATE.replace("{year}", &year.to_string())
+}
+
+/// Season an event belongs to, taken from its start date.
+pub fn event_year(event: &Event) -> Option<i32> {
+    NaiveDate::parse_from_str(&event.d, "%Y-%m-%d")
+        .ok()
+        .map(|date| date.year())
+}
 const MAX_RESPONSE_BYTES: usize = 5 * 1024 * 1024;
 
 const INCLUDE: &[&str] = &[
@@ -126,6 +140,65 @@ pub struct MergeReport {
     pub added: usize,
     pub retained: usize,
     pub changed: usize,
+    pub carried: usize,
+}
+
+/// Outcome of a multi-season run: what was refreshed, and what the source did not serve.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct RefreshSummary {
+    pub refreshed: Vec<(i32, MergeReport)>,
+    pub skipped: Vec<(i32, String)>,
+}
+
+/// Refresh each season in turn against a single calendar.
+///
+/// `load` returns the source URL and HTML for a season. A season the calendar already covers
+/// must keep refreshing, so its failure aborts the run; a season the source has not published
+/// yet is skipped, leaving the other seasons free to refresh.
+pub fn refresh_seasons<F>(
+    baseline: &Calendar,
+    years: &[i32],
+    policy: &SafetyPolicy,
+    mut load: F,
+) -> Result<(Calendar, RefreshSummary)>
+where
+    F: FnMut(i32) -> Result<(String, String)>,
+{
+    let mut seasons = years.to_vec();
+    seasons.sort_unstable();
+    seasons.dedup();
+    ensure!(!seasons.is_empty(), "at least one season is required");
+
+    let mut calendar = baseline.clone();
+    let mut summary = RefreshSummary::default();
+
+    for year in seasons {
+        let refreshed = load(year).and_then(|(source, html)| {
+            let scraped = parse_events(&html, year)?;
+            merge_with_baseline(scraped, &calendar, year, &source, policy)
+        });
+        match refreshed {
+            Ok((merged, report)) => {
+                calendar = merged;
+                summary.refreshed.push((year, report));
+            }
+            Err(error) => {
+                let covered = calendar
+                    .events
+                    .iter()
+                    .any(|event| event_year(event) == Some(year));
+                if covered {
+                    return Err(error.context(format!("season {year} could not be refreshed")));
+                }
+                summary.skipped.push((year, format!("{error:#}")));
+            }
+        }
+    }
+    ensure!(
+        !summary.refreshed.is_empty(),
+        "no season could be refreshed"
+    );
+    Ok((calendar, summary))
 }
 
 pub fn fetch_html(source: &str) -> Result<String> {
@@ -271,29 +344,45 @@ pub fn parse_events(html: &str, year: i32) -> Result<Vec<Event>> {
     Ok(events)
 }
 
+/// Refresh a single season in `baseline`, leaving every other season untouched.
 pub fn merge_with_baseline(
     scraped: Vec<Event>,
     baseline: &Calendar,
+    year: i32,
     source: &str,
     policy: &SafetyPolicy,
 ) -> Result<(Calendar, MergeReport)> {
+    for event in &scraped {
+        validate_event(event, year)?;
+    }
+
+    let (season, carried): (Vec<&Event>, Vec<&Event>) = baseline
+        .events
+        .iter()
+        .partition(|event| event_year(event) == Some(year));
+
+    // A season the calendar does not cover yet has nothing to be measured against, and a
+    // sparse early calendar must not be held to the count expected of a full one.
+    let minimum_scraped = if season.is_empty() {
+        0
+    } else {
+        policy.minimum_scraped_events.min(season.len())
+    };
     ensure!(
-        policy.force || scraped.len() >= policy.minimum_scraped_events,
-        "safety gate rejected {} scraped events; minimum is {}",
-        scraped.len(),
-        policy.minimum_scraped_events
+        policy.force || scraped.len() >= minimum_scraped,
+        "safety gate rejected {} scraped events for {year}; minimum is {minimum_scraped}",
+        scraped.len()
     );
 
     let mut url_counts = HashMap::new();
     let mut baseline_by_name_date = HashMap::new();
-    for (index, event) in baseline.events.iter().enumerate() {
+    for (index, event) in season.iter().enumerate() {
         *url_counts.entry(url_key(&event.url)).or_insert(0_usize) += 1;
         baseline_by_name_date
             .entry(name_date_key(event))
             .or_insert(index);
     }
-    let baseline_by_unique_url = baseline
-        .events
+    let baseline_by_unique_url = season
         .iter()
         .enumerate()
         .filter_map(|(index, event)| {
@@ -306,6 +395,7 @@ pub fn merge_with_baseline(
     let mut merged = Vec::with_capacity(baseline.events.len() + scraped.len());
     let mut report = MergeReport {
         scraped: scraped.len(),
+        carried: carried.len(),
         ..MergeReport::default()
     };
 
@@ -315,7 +405,7 @@ pub fn merge_with_baseline(
             .or_else(|| baseline_by_unique_url.get(&url_key(&incoming.url)))
             .copied();
         if let Some(index) = baseline_index {
-            let previous = &baseline.events[index];
+            let previous = season[index];
             matched_indexes.insert(index);
             report.matched += 1;
             preserve_curated_fields(&mut incoming, previous);
@@ -328,26 +418,29 @@ pub fn merge_with_baseline(
         merged.push(incoming);
     }
 
-    for (index, event) in baseline.events.iter().enumerate() {
+    for (index, event) in season.iter().enumerate() {
         if !matched_indexes.contains(&index) {
-            merged.push(event.clone());
+            merged.push((*event).clone());
             report.retained += 1;
         }
+    }
+    for event in &carried {
+        merged.push((*event).clone());
     }
     merged.sort_by(|left, right| left.d.cmp(&right.d).then(left.name.cmp(&right.name)));
     reject_duplicates(&merged)?;
 
-    if !baseline.events.is_empty() && !policy.force {
-        let match_percent = report.matched * 100 / baseline.events.len();
+    if !season.is_empty() && !policy.force {
+        let match_percent = report.matched * 100 / season.len();
         ensure!(
             match_percent >= policy.minimum_match_percent as usize,
-            "safety gate rejected {match_percent}% baseline matches; minimum is {}%",
+            "safety gate rejected {match_percent}% baseline matches for {year}; minimum is {}%",
             policy.minimum_match_percent
         );
-        let growth_percent = report.added * 100 / baseline.events.len();
+        let growth_percent = report.added * 100 / season.len();
         ensure!(
             growth_percent <= policy.maximum_growth_percent as usize,
-            "safety gate rejected {growth_percent}% new events; maximum is {}%",
+            "safety gate rejected {growth_percent}% new events for {year}; maximum is {}%",
             policy.maximum_growth_percent
         );
     }
@@ -746,7 +839,7 @@ mod tests {
             force: false,
         };
         let (calendar, report) =
-            merge_with_baseline(scraped, &baseline, DEFAULT_SOURCE, &policy).unwrap();
+            merge_with_baseline(scraped, &baseline, 2026, &default_source(2026), &policy).unwrap();
         assert_eq!(report.retained, 1);
         assert_eq!(report.added, 4);
         assert!(
@@ -790,6 +883,206 @@ mod tests {
             maximum_growth_percent: 25,
             force: false,
         };
-        assert!(merge_with_baseline(scraped, &baseline, DEFAULT_SOURCE, &policy).is_err());
+        assert!(
+            merge_with_baseline(scraped, &baseline, 2026, &default_source(2026), &policy).is_err()
+        );
+    }
+
+    fn event(date: &str, name: &str, url: &str) -> Event {
+        Event {
+            d: date.to_owned(),
+            d2: None,
+            name: name.to_owned(),
+            url: url.to_owned(),
+            loc: "Loc".to_owned(),
+            county: "CJ".to_owned(),
+            dist: "10 km".to_owned(),
+            tags: vec![],
+            status: None,
+            note: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    fn calendar_of(events: Vec<Event>) -> Calendar {
+        Calendar {
+            generated: "2026-01-01".to_owned(),
+            sources: vec![],
+            events,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn source_url_follows_the_season() {
+        assert!(default_source(2027).ends_with("alergare-2027/"));
+        assert_ne!(default_source(2026), default_source(2027));
+        assert_eq!(SUPPORTED_YEARS, &[2026, 2027]);
+    }
+
+    #[test]
+    fn merge_carries_other_seasons_untouched() {
+        let scraped = parse_events(FIXTURE, 2026).unwrap();
+        let next_season = event("2027-05-15", "Sezon viitor", "https://example.test/2027");
+        let baseline = calendar_of(vec![
+            event("2026-03-14", "Vechi", "https://example.test/vechi"),
+            next_season.clone(),
+        ]);
+        let policy = SafetyPolicy {
+            minimum_scraped_events: 1,
+            minimum_match_percent: 0,
+            maximum_growth_percent: 500,
+            force: false,
+        };
+        let (calendar, report) =
+            merge_with_baseline(scraped, &baseline, 2026, &default_source(2026), &policy).unwrap();
+        assert_eq!(report.carried, 1);
+        assert_eq!(report.retained, 1);
+        assert!(calendar.events.contains(&next_season));
+    }
+
+    #[test]
+    fn merge_accepts_a_season_the_calendar_does_not_cover_yet() {
+        let scraped = parse_events(FIXTURE, 2027).unwrap();
+        let baseline = calendar_of(vec![event(
+            "2026-03-14",
+            "Vechi",
+            "https://example.test/vechi",
+        )]);
+        // The gates a full season is held to must not reject the first scrape of a new one.
+        let policy = SafetyPolicy {
+            minimum_scraped_events: 50,
+            minimum_match_percent: 50,
+            maximum_growth_percent: 25,
+            force: false,
+        };
+        let (calendar, report) =
+            merge_with_baseline(scraped, &baseline, 2027, &default_source(2027), &policy).unwrap();
+        assert_eq!(report.added, 5);
+        assert_eq!(report.carried, 1);
+        assert_eq!(calendar.events.len(), 6);
+        assert!(
+            calendar
+                .events
+                .iter()
+                .any(|stored| event_year(stored) == Some(2026))
+        );
+        assert_eq!(
+            calendar
+                .events
+                .iter()
+                .filter(|stored| event_year(stored) == Some(2027))
+                .count(),
+            5
+        );
+    }
+
+    fn lenient_policy() -> SafetyPolicy {
+        SafetyPolicy {
+            minimum_scraped_events: 1,
+            minimum_match_percent: 0,
+            maximum_growth_percent: 5000,
+            force: false,
+        }
+    }
+
+    #[test]
+    fn refresh_skips_a_season_the_source_has_not_published() {
+        let baseline = calendar_of(vec![event(
+            "2026-03-14",
+            "Vechi",
+            "https://example.test/vechi",
+        )]);
+        let (calendar, summary) =
+            refresh_seasons(&baseline, &[2026, 2027], &lenient_policy(), |year| {
+                if year == 2027 {
+                    bail!("source returned an unsuccessful status: 404");
+                }
+                Ok((default_source(year), FIXTURE.to_owned()))
+            })
+            .unwrap();
+
+        assert_eq!(summary.refreshed.len(), 1);
+        assert_eq!(summary.refreshed[0].0, 2026);
+        assert_eq!(summary.skipped.len(), 1);
+        assert_eq!(summary.skipped[0].0, 2027);
+        assert!(summary.skipped[0].1.contains("404"));
+        assert!(calendar.events.iter().any(|stored| stored.name == "Vechi"));
+        assert!(
+            calendar
+                .events
+                .iter()
+                .all(|stored| event_year(stored) == Some(2026))
+        );
+    }
+
+    #[test]
+    fn refresh_aborts_when_a_covered_season_fails() {
+        let baseline = calendar_of(vec![
+            event("2026-03-14", "Vechi", "https://example.test/vechi"),
+            event("2027-05-15", "Sezon viitor", "https://example.test/2027"),
+        ]);
+        let failure = refresh_seasons(&baseline, &[2026, 2027], &lenient_policy(), |year| {
+            if year == 2027 {
+                bail!("source request failed");
+            }
+            Ok((default_source(year), FIXTURE.to_owned()))
+        })
+        .unwrap_err();
+        assert!(format!("{failure:#}").contains("season 2027 could not be refreshed"));
+    }
+
+    #[test]
+    fn refresh_updates_every_configured_season() {
+        let baseline = calendar_of(vec![event(
+            "2026-03-14",
+            "Vechi",
+            "https://example.test/vechi",
+        )]);
+        let (calendar, summary) =
+            refresh_seasons(&baseline, &[2027, 2026, 2027], &lenient_policy(), |year| {
+                Ok((default_source(year), FIXTURE.to_owned()))
+            })
+            .unwrap();
+
+        assert_eq!(
+            summary
+                .refreshed
+                .iter()
+                .map(|(year, _)| *year)
+                .collect::<Vec<_>>(),
+            vec![2026, 2027]
+        );
+        assert!(summary.skipped.is_empty());
+        let season = |year| {
+            calendar
+                .events
+                .iter()
+                .filter(|stored| event_year(stored) == Some(year))
+                .count()
+        };
+        // 2026 keeps its curated event alongside the five scraped ones; 2027 starts from them.
+        assert_eq!(season(2026), 6);
+        assert_eq!(season(2027), 5);
+        assert_eq!(calendar.sources.len(), 2);
+    }
+
+    #[test]
+    fn merge_rejects_events_from_another_season() {
+        let scraped = parse_events(FIXTURE, 2026).unwrap();
+        let baseline = calendar_of(vec![event(
+            "2027-05-15",
+            "Sezon viitor",
+            "https://example.test/2027",
+        )]);
+        let policy = SafetyPolicy {
+            minimum_scraped_events: 1,
+            minimum_match_percent: 0,
+            maximum_growth_percent: 500,
+            force: false,
+        };
+        assert!(
+            merge_with_baseline(scraped, &baseline, 2027, &default_source(2027), &policy).is_err()
+        );
     }
 }

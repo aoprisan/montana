@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { runInNewContext } from "node:vm";
 
 const root = resolve(import.meta.dirname, "..");
+const supportedYears = [2026, 2027];
 const app = resolve(root, "app");
 const requiredFiles = [
   "index.html",
@@ -47,8 +48,21 @@ if (!Array.isArray(embedded.events) || embedded.events.length === 0) {
 }
 for (const [name, calendar] of [["events.json", events], ["embedded fallback", embedded]]) {
   for (const event of calendar.events) {
-    if (!/^2026-\d{2}-\d{2}$/.test(event.d) || Number.isNaN(Date.parse(`${event.d}T12:00:00Z`))) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event.d) || Number.isNaN(Date.parse(`${event.d}T12:00:00Z`))) {
       throw new Error(`${name} contains an invalid date for ${event.name ?? "unnamed event"}`);
+    }
+    if (!supportedYears.includes(Number(event.d.slice(0, 4)))) {
+      throw new Error(
+        `${name} contains an unsupported season for ${event.name ?? "unnamed event"}; supported: ${supportedYears.join(", ")}`,
+      );
+    }
+    if (event.d2 !== undefined) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(event.d2) || Number.isNaN(Date.parse(`${event.d2}T12:00:00Z`))) {
+        throw new Error(`${name} contains an invalid end date for ${event.name ?? "unnamed event"}`);
+      }
+      if (event.d2 < event.d) {
+        throw new Error(`${name} contains an event ending before it starts: ${event.name ?? "unnamed event"}`);
+      }
     }
     const url = new URL(event.url);
     if (url.protocol !== "http:" && url.protocol !== "https:") {
@@ -123,7 +137,7 @@ class FakeElement {
 }
 
 const elements = new Map(
-  ["list", "months", "q", "count", "showCancelled", "onlyUpcoming", "allTags", "nextRace", "gen", "data", "calendarGrid", "calendarTitle", "calendarPrev", "calendarNext", "selectionContent", "savedTabCount"].map(
+  ["list", "months", "q", "count", "showCancelled", "onlyUpcoming", "allTags", "nextRace", "gen", "data", "calendarGrid", "calendarTitle", "calendarHeading", "calendarPrev", "calendarNext", "selectionContent", "savedTabCount", "yearChips"].map(
     (id) => [id, new FakeElement(id)],
   ),
 );
@@ -140,6 +154,8 @@ const currentEvents = {
     { d: "2026-08-16", d2: "2026-08-18", name: "Ongoing", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
     { d: "2026-08-18", name: "Today", url: "#", loc: "—", county: "—", dist: "—", tags: [] },
     { d: "2026-08-19", name: "Future", url: "#", loc: "—", county: "—", dist: "10 / 20 km", tags: [] },
+    { d: "2027-05-15", name: "Next season", url: "#", loc: "—", county: "—", dist: "30 km", tags: [] },
+    { d: "2027-12-31", d2: "2028-01-01", name: "Season finale", url: "#", loc: "—", county: "—", dist: "24 h", tags: [] },
   ],
 };
 elements.get("showCancelled").setAttribute("aria-pressed", "true");
@@ -199,6 +215,60 @@ if (!elements.get("list").innerHTML.includes("Past")) {
   throw new Error("disabling upcoming-only did not restore past events");
 }
 
+const yearChips = elements.get("yearChips");
+if (yearChips.hidden) {
+  throw new Error("the season selector stayed hidden with more than one season in the calendar");
+}
+for (const year of supportedYears) {
+  if (!yearChips.innerHTML.includes(`data-year="${year}"`)) {
+    throw new Error(`the season selector is missing ${year}`);
+  }
+}
+if (context.__calendarTrail.state.year !== 2026) {
+  throw new Error(`the current season is not selected by default: ${context.__calendarTrail.state.year}`);
+}
+if (elements.get("list").innerHTML.includes("Next season")) {
+  throw new Error("the 2026 list leaked races from another season");
+}
+
+const selectYear = (year) =>
+  listeners.get("yearChips:click")({ target: { closest: () => ({ dataset: { year: String(year) } }) } });
+
+selectYear(2027);
+if (context.__calendarTrail.state.year !== 2027) {
+  throw new Error("the season selector did not switch seasons");
+}
+if (!elements.get("count").innerHTML.startsWith("2 curse") || !elements.get("count").innerHTML.includes("2027")) {
+  throw new Error(`switching seasons returned the wrong event count: ${elements.get("count").innerHTML}`);
+}
+if (!elements.get("list").innerHTML.includes("Next season") || elements.get("list").innerHTML.includes("Ongoing")) {
+  throw new Error("the 2027 list did not replace the 2026 races");
+}
+if (elements.get("calendarTitle").textContent !== "Ianuarie 2027" || elements.get("calendarHeading").textContent !== "Calendar 2027") {
+  throw new Error(`the calendar view did not follow the selected season: ${elements.get("calendarTitle").textContent}`);
+}
+if (elements.get("calendarNext").disabled !== false || elements.get("calendarPrev").disabled !== false) {
+  throw new Error("calendar navigation is disabled inside the supported seasons");
+}
+
+listeners.get("calendarPrev:click")();
+if (context.__calendarTrail.state.year !== 2026 || elements.get("calendarTitle").textContent !== "Decembrie 2026") {
+  throw new Error(`the calendar did not step back into the previous season: ${elements.get("calendarTitle").textContent}`);
+}
+listeners.get("calendarNext:click")();
+if (context.__calendarTrail.state.year !== 2027 || elements.get("calendarTitle").textContent !== "Ianuarie 2027") {
+  throw new Error(`the calendar did not step forward into the next season: ${elements.get("calendarTitle").textContent}`);
+}
+if (elements.get("calendarPrev").disabled !== false) {
+  throw new Error("the calendar refuses to step back across the season boundary");
+}
+listeners.get("calendarPrev:click")();
+selectYear(2026);
+context.__calendarTrail.setYear(2026, { month: 0 });
+if (elements.get("calendarPrev").disabled !== true) {
+  throw new Error("the calendar offers a month before the first supported season");
+}
+
 if (!html.includes('role="tab"') || !html.includes('id="panel-calendar"') || !html.includes('id="panel-selected"')) {
   throw new Error("three-view navigation is missing");
 }
@@ -214,4 +284,14 @@ if (elements.get("selectionContent").innerHTML.includes("Preț") || elements.get
   throw new Error("disabled pricing is still visible in the selection");
 }
 
-console.log(`Static PWA is valid (${events.events.length} events; tabs, saved races, and filters passed).`);
+context.__calendarTrail.toggleSaved(currentEvents.events[4]);
+if (!elements.get("selectionContent").innerHTML.includes("15 MAI 2027")) {
+  throw new Error("the selection did not label a saved race with its own season");
+}
+if (!elements.get("selectionContent").innerHTML.includes("19 AUG 2026")) {
+  throw new Error("the selection dropped races from another season");
+}
+
+console.log(
+  `Static PWA is valid (${events.events.length} events; seasons ${supportedYears.join("/")}, tabs, saved races, and filters passed).`,
+);

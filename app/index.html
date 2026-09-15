@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Calendar Trail</title>
-<meta name="description" content="Calendarul curselor de alergare montană și trail din România în 2026, cu linkuri către paginile oficiale.">
+<meta name="description" content="Calendarul curselor de alergare montană și trail din România în 2026 și 2027, cu linkuri către paginile oficiale.">
 <meta name="theme-color" content="#1f2a1d">
 <meta name="apple-mobile-web-app-title" content="Calendar Trail">
 <link rel="manifest" href="manifest.webmanifest">
@@ -76,6 +76,8 @@ input[type=search]::placeholder{color:#78827d}
 .chip{height:48px;border:1px solid #6e7772;background:transparent;border-radius:0;padding:0 17px;font:700 15px var(--disp);text-transform:uppercase;cursor:pointer;transition:.16s ease}
 .chip:hover{border-color:var(--ink);transform:translateY(-1px)}
 .chip[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--white)}
+.year-chips{display:flex;flex:0 0 auto;align-items:center;gap:8px;padding-right:14px;border-right:1px solid var(--line)}
+.filter-chips[hidden]{display:none}
 .chip:focus-visible,.toggle:focus-visible,.month-btn:focus-visible{outline:3px solid color-mix(in srgb,var(--orange) 36%,transparent);outline-offset:2px}
 .toggles{display:flex;align-items:center;gap:24px;margin-left:auto}
 .toggle{display:flex;align-items:center;gap:11px;border:0;background:none;padding:10px 0;white-space:nowrap;cursor:pointer;font-size:13px}
@@ -273,6 +275,7 @@ body[data-view=calendar] .hero,body[data-view=selected] .hero{display:none}
       <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16.2 16.2 4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
       <input type="search" id="q" placeholder="Caută cursă sau loc" aria-label="Caută cursă sau loc">
     </label>
+    <div class="filter-chips year-chips" id="yearChips" aria-label="Filtru după an" hidden></div>
     <div class="filter-chips" aria-label="Filtre după tipul cursei">
       <button class="chip" id="allTags" aria-pressed="true">Toate</button>
       <button class="chip" data-tag="ultra" aria-pressed="false">Ultra</button>
@@ -301,7 +304,7 @@ body[data-view=calendar] .hero,body[data-view=selected] .hero{display:none}
 <section class="view-panel calendar-view" id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
   <div class="wrap">
     <header class="view-heading">
-      <h1>Calendar 2026</h1>
+      <h1 id="calendarHeading">Calendar</h1>
       <p>Vezi aglomerația fiecărei luni și salvează cursele care merită un loc în sezonul tău.</p>
     </header>
     <div class="calendar-toolbar">
@@ -469,8 +472,8 @@ const MON_SHORT=["IAN","FEB","MAR","APR","MAI","IUN","IUL","AUG","SEP","OCT","NO
 let DATA={events:[]};
 const now=new Date();
 const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-const initialMonth=now.getFullYear()===2026?now.getMonth():0;
-const state={q:"",tags:new Set(),onlyUpcoming:true,showCancelled:true,view:"races",calendarMonth:initialMonth,saved:{}};
+let YEARS=[now.getFullYear()];
+const state={q:"",tags:new Set(),onlyUpcoming:true,showCancelled:true,view:"races",year:now.getFullYear(),calendarMonth:0,saved:{}};
 
 const ICONS={
   location:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/></svg>',
@@ -482,7 +485,8 @@ const ICONS={
   next:'<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>'
 };
 
-const fmt=d=>{const [y,m,day]=d.split("-");return {m:+m-1,day:+day};};
+const fmt=d=>{const [y,m,day]=d.split("-");return {y:+y,m:+m-1,day:+day};};
+const eventYear=e=>+e.d.slice(0,4);
 const eventKey=e=>`${e.d}|${e.name}`;
 function readSaved(){
   try{const value=JSON.parse(localStorage.getItem("calendar-trail:saved")||"{}");return value&&typeof value==="object"?value:{};}catch{return {};}
@@ -499,6 +503,25 @@ function renderSavedState(){
   const count=Object.keys(state.saved).length;
   document.getElementById("savedTabCount").textContent=count?` · ${count}`:"";
 }
+function calendarYears(){
+  const years=[...new Set(DATA.events.map(eventYear))].sort((a,b)=>a-b);
+  return years.length?years:[now.getFullYear()];
+}
+function defaultYear(){
+  if(YEARS.includes(now.getFullYear())&&DATA.events.some(e=>eventYear(e)===now.getFullYear()&&(e.d2||e.d)>=today)) return now.getFullYear();
+  return YEARS.find(y=>DATA.events.some(e=>eventYear(e)===y&&(e.d2||e.d)>=today))??YEARS.at(-1);
+}
+function setYear(year,{month}={}){
+  if(!YEARS.includes(year)) year=YEARS.at(-1);
+  state.year=year;
+  state.calendarMonth=month??(year===now.getFullYear()?now.getMonth():0);
+  drawYears();render();renderCalendar();
+}
+function drawYears(){
+  const nav=document.getElementById("yearChips");
+  nav.hidden=YEARS.length<2;
+  nav.innerHTML=YEARS.map(y=>`<button class="chip" data-year="${y}" aria-pressed="${String(y===state.year)}" aria-label="Sezonul ${y}">${y}</button>`).join("");
+}
 function rangeLabel(e){
   const a=fmt(e.d);
   if(!e.d2) return null;
@@ -506,6 +529,7 @@ function rangeLabel(e){
   return (a.m===b.m)?`${a.day}–${b.day} ${MON_SHORT[a.m]}`:`${a.day} ${MON_SHORT[a.m]} – ${b.day} ${MON_SHORT[b.m]}`;
 }
 function matches(e){
+  if(eventYear(e)!==state.year) return false;
   if(state.onlyUpcoming && (e.d2||e.d)<today) return false;
   if(!state.showCancelled && e.status==="anulat") return false;
   if(state.tags.size && ![...state.tags].every(t=>(e.tags||[]).includes(t))) return false;
@@ -558,17 +582,18 @@ function render(){
     html+="</section>";
   }
   list.innerHTML=html||`<p class="empty"><strong>Nicio cursă găsită</strong>Șterge căutarea sau dezactivează un filtru.</p>`;
-  const tot=DATA.events.length;
-  document.getElementById("count").innerHTML=`${evs.length} ${evs.length===1?"cursă":"curse"}<small>din ${tot} în calendar</small>`;
+  const tot=DATA.events.filter(e=>eventYear(e)===state.year).length;
+  document.getElementById("count").innerHTML=`${evs.length} ${evs.length===1?"cursă":"curse"}<small>din ${tot} în ${state.year}</small>`;
   drawMonths(evs);
 }
 function calendarDate(year,month,day){return `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;}
 function renderCalendar(){
   const grid=document.getElementById("calendarGrid");
-  const month=state.calendarMonth, year=2026;
+  const month=state.calendarMonth, year=state.year, index=YEARS.indexOf(year);
+  document.getElementById("calendarHeading").textContent=`Calendar ${year}`;
   document.getElementById("calendarTitle").textContent=`${MONTHS[month]} ${year}`;
-  document.getElementById("calendarPrev").disabled=month===0;
-  document.getElementById("calendarNext").disabled=month===11;
+  document.getElementById("calendarPrev").disabled=month===0&&index<=0;
+  document.getElementById("calendarNext").disabled=month===11&&index>=YEARS.length-1;
   const first=new Date(year,month,1), offset=(first.getDay()+6)%7;
   const start=new Date(year,month,1-offset);
   let html="";
@@ -597,7 +622,7 @@ function renderSelection(){
   let rows="";
   for(const e of selected){
     const key=eventKey(e);
-    rows+=`<article class="selection-row"><time class="selection-date" datetime="${esc(e.d)}">${String(fmt(e.d).day).padStart(2,"0")} ${MON_SHORT[fmt(e.d).m]} 2026</time><h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)} ${ICONS.out}</a></h3><span class="selection-loc">${esc(e.loc)}, ${esc(e.county)}</span><div class="selection-distance">${esc(e.dist||"Distanță nepublicată")}</div><button class="remove-btn" data-save="${esc(key)}">Elimină</button></article>`;
+    rows+=`<article class="selection-row"><time class="selection-date" datetime="${esc(e.d)}">${String(fmt(e.d).day).padStart(2,"0")} ${MON_SHORT[fmt(e.d).m]} ${fmt(e.d).y}</time><h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name)} ${ICONS.out}</a></h3><span class="selection-loc">${esc(e.loc)}, ${esc(e.county)}</span><div class="selection-distance">${esc(e.dist||"Distanță nepublicată")}</div><button class="remove-btn" data-save="${esc(key)}">Elimină</button></article>`;
   }
   target.innerHTML=`<section class="selection-summary" aria-label="Rezumatul selecției"><div class="summary-item"><span class="summary-label">Curse selectate</span><strong class="summary-value is-count">${selected.length}</strong></div><div class="summary-item summary-note"><strong>Selecția ta rămâne aici.</strong>Cursele salvate sunt păstrate local în acest browser.</div></section><div class="selection-table"><div class="selection-head" aria-hidden="true"><span>Data</span><span>Cursă</span><span>Locație</span><span>Distanțe</span><span>Acțiuni</span></div>${rows}</div><div class="source-note"><span>Verifică pagina oficială înainte de înscriere.</span></div>`;
 }
@@ -618,7 +643,7 @@ function drawMonths(evs){
   const max=Math.max(...counts,1);
   nav.innerHTML=counts.map((c,i)=>{
     const bars=Array.from({length:4},(_,j)=>`<i style="height:${c?Math.max(4,Math.round((c/max)*24)-(j%2)*4):3}px"></i>`).join("");
-    const current=i===now.getMonth();
+    const current=i===now.getMonth()&&state.year===now.getFullYear();
     return `<button class="month-btn${current?" is-current":""}" data-m="${i}" ${c?"":"disabled"} aria-label="${MONTHS[i]}, ${c} ${c===1?"cursă":"curse"}"><span class="density" aria-hidden="true">${bars}</span><span>${MON_SHORT[i]}</span><span class="month-num">${c}</span></button>`;
   }).join("");
   nav.querySelectorAll(".month-btn:not(:disabled)").forEach(button=>{
@@ -659,8 +684,20 @@ document.querySelectorAll(".view-tab").forEach(tab=>{
 });
 document.getElementById("calendarPrev").innerHTML=ICONS.prev;
 document.getElementById("calendarNext").innerHTML=ICONS.next;
-document.getElementById("calendarPrev").addEventListener("click",()=>{if(state.calendarMonth>0){state.calendarMonth--;renderCalendar();}});
-document.getElementById("calendarNext").addEventListener("click",()=>{if(state.calendarMonth<11){state.calendarMonth++;renderCalendar();}});
+document.getElementById("calendarPrev").addEventListener("click",()=>{
+  if(state.calendarMonth>0){state.calendarMonth--;renderCalendar();return;}
+  const index=YEARS.indexOf(state.year);
+  if(index>0) setYear(YEARS[index-1],{month:11});
+});
+document.getElementById("calendarNext").addEventListener("click",()=>{
+  if(state.calendarMonth<11){state.calendarMonth++;renderCalendar();return;}
+  const index=YEARS.indexOf(state.year);
+  if(index>=0&&index<YEARS.length-1) setYear(YEARS[index+1],{month:0});
+});
+document.getElementById("yearChips").addEventListener("click",e=>{
+  const button=e.target.closest?.("[data-year]");
+  if(button) setYear(Number(button.dataset.year));
+});
 async function loadData(){
   const fallback=JSON.parse(document.getElementById("data").textContent);
   if(typeof location!=="undefined"&&location.protocol==="file:") return fallback;
@@ -678,6 +715,10 @@ async function loadData(){
 async function init(){
   DATA=await loadData();
   state.saved=readSaved();
+  YEARS=calendarYears();
+  state.year=defaultYear();
+  state.calendarMonth=state.year===now.getFullYear()?now.getMonth():0;
+  drawYears();
   document.getElementById("gen").textContent=`Date actualizate la ${DATA.generated}.`;
   renderNextRace();
   renderSavedState();
@@ -686,7 +727,7 @@ async function init(){
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 globalThis.__appReady=init();
-globalThis.__calendarTrail={state,eventKey,toggleSaved,setView,renderSelection};
+globalThis.__calendarTrail={state,eventKey,toggleSaved,setView,setYear,renderSelection,years:()=>YEARS};
 </script>
 </body>
 </html>
