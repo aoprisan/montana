@@ -20,6 +20,7 @@ selectat primul sezon cu curse viitoare.
   - `events.json` — sursa canonică încărcată de aplicație la fiecare pornire
 - `scraper/` — worker Rust care actualizează sigur `events.json` din calendarul comunitar
 - `deploy/montana-scraper.{service,timer}` — job systemd pornit zilnic pe VPS
+- `docs/` — note tehnice; `typesafe-jev.md` evaluează clasificarea curselor cu un model de decizie
 
 ## Dezvoltare locală
 
